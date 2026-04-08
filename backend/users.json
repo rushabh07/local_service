@@ -1,0 +1,8 @@
+{
+  "name": "rushabh saraiya",
+  "email": "rushabh@gmail.com",
+  "password": "hashed_password",
+  "phone": "9876543210",
+  "role": "customer",
+  "address": "pune, india"
+}
