@@ -27,12 +27,12 @@ function Register() {
 
     let newErrors = {};
 
-    if (formData.name.length < 3) {
+    if (formData.name.trim().length < 3) {
       newErrors.name = "Name must be at least 3 characters";
     }
 
     if (!formData.email.includes("@")) {
-      newErrors.email = "Enter valid email";
+      newErrors.email = "Enter a valid email";
     }
 
     if (formData.password.length < 6) {
@@ -43,8 +43,8 @@ function Register() {
       newErrors.phone = "Phone must be 10 digits";
     }
 
-    if (formData.address.length < 5) {
-      newErrors.address = "Enter valid address";
+    if (formData.address.trim().length < 5) {
+      newErrors.address = "Enter a valid address";
     }
 
     setErrors(newErrors);
@@ -84,20 +84,29 @@ function Register() {
       setServerError("Server error. Try again later.");
 
     }
+
   };
 
   return (
 
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-
-      <div className="bg-white p-8 rounded-xl shadow-lg w-96">
-
-        <h2 className="text-2xl font-bold text-center mb-6">
-          User Registration
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600">
+      <button
+  onClick={() => navigate("/")}
+  className="absolute top-6 left-6 flex items-center gap-2 px-5 py-2 
+  text-white font-semibold bg-white/20 backdrop-blur-md 
+  border border-white/30 rounded-lg shadow-md 
+  hover:bg-white/30 transition duration-300"
+>
+  ← Home
+</button>
+      <div className="bg-white/20 backdrop-blur-lg p-8 rounded-2xl shadow-lg w-96 border border-white/30">
+      
+        <h2 className="text-3xl font-bold text-center text-white mb-6">
+          Create Account
         </h2>
 
         {serverError && (
-          <p className="text-red-500 text-center mb-3">
+          <p className="text-red-200 text-center mb-3">
             {serverError}
           </p>
         )}
@@ -109,10 +118,10 @@ function Register() {
               type="text"
               name="name"
               placeholder="Full Name"
-              className="w-full p-2 border rounded"
+              className="w-full p-3 rounded-lg bg-white/70 focus:outline-none"
               onChange={handleChange}
             />
-            <p className="text-red-500 text-sm">{errors.name}</p>
+            <p className="text-red-200 text-sm">{errors.name}</p>
           </div>
 
           <div>
@@ -120,10 +129,10 @@ function Register() {
               type="email"
               name="email"
               placeholder="Email"
-              className="w-full p-2 border rounded"
+              className="w-full p-3 rounded-lg bg-white/70 focus:outline-none"
               onChange={handleChange}
             />
-            <p className="text-red-500 text-sm">{errors.email}</p>
+            <p className="text-red-200 text-sm">{errors.email}</p>
           </div>
 
           <div>
@@ -131,10 +140,10 @@ function Register() {
               type="password"
               name="password"
               placeholder="Password"
-              className="w-full p-2 border rounded"
+              className="w-full p-3 rounded-lg bg-white/70 focus:outline-none"
               onChange={handleChange}
             />
-            <p className="text-red-500 text-sm">{errors.password}</p>
+            <p className="text-red-200 text-sm">{errors.password}</p>
           </div>
 
           <div>
@@ -142,10 +151,10 @@ function Register() {
               type="text"
               name="phone"
               placeholder="Phone Number"
-              className="w-full p-2 border rounded"
+              className="w-full p-3 rounded-lg bg-white/70 focus:outline-none"
               onChange={handleChange}
             />
-            <p className="text-red-500 text-sm">{errors.phone}</p>
+            <p className="text-red-200 text-sm">{errors.phone}</p>
           </div>
 
           <div>
@@ -153,26 +162,27 @@ function Register() {
               type="text"
               name="address"
               placeholder="Address"
-              className="w-full p-2 border rounded"
+              className="w-full p-3 rounded-lg bg-white/70 focus:outline-none"
               onChange={handleChange}
             />
-            <p className="text-red-500 text-sm">{errors.address}</p>
+            <p className="text-red-200 text-sm">{errors.address}</p>
           </div>
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+            className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold hover:opacity-90"
           >
             Register
           </button>
+          
 
         </form>
 
-        <p className="text-center mt-4 text-sm">
+        <p className="text-center text-white mt-4 text-sm">
           Already have an account?
           <span
             onClick={() => navigate("/login")}
-            className="text-blue-600 cursor-pointer ml-1"
+            className="ml-1 font-semibold cursor-pointer"
           >
             Login
           </span>
@@ -183,6 +193,7 @@ function Register() {
     </div>
 
   );
+
 }
 
 export default Register;
