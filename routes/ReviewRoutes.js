@@ -1,0 +1,53 @@
+const express = require("express");
+const router = express.Router();
+const Review = require("../models/Review");
+
+router.get("/", async (req, res) => {
+    try {
+        const reviews = await Review.find();
+        res.json(reviews);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Server error");
+    }
+});
+
+router.post("/", async (req, res) => {
+    const { serviceId, userId, userName, rating, comment } = req.body;
+
+    const review = new Review({
+        serviceId,
+        userId,
+        userName,
+        rating,
+        comment
+    });
+
+    await review.save();
+    res.send("Review added");
+});
+
+router.get("/approved", async (req, res) => {
+    const reviews = await Review.find({ approved: true });
+    res.json(reviews);
+});
+
+
+
+router.get("/pending", async (req, res) => {
+    const reviews = await Review.find({ approved: false });
+    res.json(reviews);
+});
+
+router.put("/approve/:id", async (req, res) => {
+    await Review.findByIdAndUpdate(req.params.id, { approved: true });
+    res.send("Approved");
+});
+
+
+router.delete("/:id", async (req, res) => {
+    await Review.findByIdAndDelete(req.params.id);
+    res.send("Deleted");
+});
+
+module.exports = router;

@@ -1,0 +1,159 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Save } from 'lucide-react';
+import api from "../../services/api";
+import toast from "react-hot-toast";
+
+export default function AddService() {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [service, setService] = useState({
+    title: "",
+    category: "",
+    price: "",
+    priceType: "",
+    includes: "",
+    image: "",
+    duration: "",
+    description: ""
+  });
+
+  const handleChange = (e) => {
+    setService({ ...service, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!service.title || !service.category || !service.price) {
+      toast.error("Please fill in required fields (Name, Category, Price)");
+      return;
+    }
+    setLoading(true);
+    try {
+      await api.post("/services/add", service);
+      toast.success("Service added successfully!");
+      navigate("/admin/dashboard/services");
+    } catch (error) {
+      toast.error("Failed to add service. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-slate-50 dark:bg-slate-900 min-h-screen py-10">
+      <div className="max-w-4xl mx-auto px-4">
+        <button
+          onClick={() => navigate("/admin/dashboard/services")}
+          className="flex items-center gap-2 text-indigo-600 font-medium mb-6 hover:text-indigo-700 transition"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+        </button>
+
+        <div className="bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 rounded-2xl p-8">
+          <h2 className="text-3xl font-heading font-bold mb-8 text-slate-800 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-4">
+            Add New Service
+          </h2>
+
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex flex-col">
+              <label className="font-semibold text-slate-700 dark:text-slate-300 mb-1.5 text-sm">Service Name *</label>
+              <input
+                name="title"
+                placeholder="e.g. AC Repair"
+                onChange={handleChange}
+                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white"
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="font-semibold text-slate-700 dark:text-slate-300 mb-1.5 text-sm">Category *</label>
+              <input
+                name="category"
+                placeholder="e.g. Electrician"
+                onChange={handleChange}
+                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white"
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="font-semibold text-slate-700 dark:text-slate-300 mb-1.5 text-sm">Price (₹) *</label>
+              <input
+                name="price"
+                type="number"
+                placeholder="e.g. 500"
+                onChange={handleChange}
+                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white"
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="font-semibold text-slate-700 dark:text-slate-300 mb-1.5 text-sm">Price Type</label>
+              <select
+                name="priceType"
+                onChange={handleChange}
+                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white"
+              >
+                <option value="">Select Price Type</option>
+                <option value="fixed">Fixed</option>
+                <option value="start">Starting From</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col">
+              <label className="font-semibold text-slate-700 dark:text-slate-300 mb-1.5 text-sm">Duration</label>
+              <input
+                name="duration"
+                placeholder="Example: 2 Hours"
+                onChange={handleChange}
+                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white"
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="font-semibold text-slate-700 dark:text-slate-300 mb-1.5 text-sm">Includes (Comma separated)</label>
+              <input
+                name="includes"
+                placeholder="e.g. Filter cleaning, Gas check"
+                onChange={handleChange}
+                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white"
+              />
+            </div>
+
+            <div className="flex flex-col md:col-span-2">
+              <label className="font-semibold text-slate-700 dark:text-slate-300 mb-1.5 text-sm">Image URL</label>
+              <input
+                name="image"
+                placeholder="Paste image link here"
+                onChange={handleChange}
+                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white"
+              />
+            </div>
+
+            <div className="flex flex-col md:col-span-2">
+              <label className="font-semibold text-slate-700 dark:text-slate-300 mb-1.5 text-sm">Description</label>
+              <textarea
+                name="description"
+                placeholder="Detailed description of the service..."
+                onChange={handleChange}
+                rows="4"
+                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white"
+              />
+            </div>
+
+            <div className="md:col-span-2 pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end">
+              <button
+                type="submit"
+                disabled={loading}
+                className={`flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold transition shadow ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              >
+                <Save className="w-5 h-5" />
+                {loading ? 'Saving...' : 'Add Service'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
