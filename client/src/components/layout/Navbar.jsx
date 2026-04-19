@@ -54,8 +54,8 @@ export default function Navbar() {
   const dashboardLink = user?.role === 'admin'
     ? '/admin/dashboard'
     : user?.role === 'provider'
-    ? '/provider/dashboard'
-    : '/user/dashboard';
+      ? '/provider/dashboard'
+      : '/user/dashboard';
 
   const navLinks = [
     { to: '/', label: 'Home' },
@@ -65,7 +65,7 @@ export default function Navbar() {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 dark:bg-slate-900/95 shadow-md' : 'bg-white/80 dark:bg-slate-900/80'} backdrop-blur-md border-b border-slate-200/80 dark:border-slate-700/80`}>
+    <nav className={`sticky top-0 z-[999] transition-all duration-300 ${scrolled ? 'bg-white/95 dark:bg-slate-900/95 shadow-md' : 'bg-white/80 dark:bg-slate-900/80'} backdrop-blur-md border-b border-slate-200/80 dark:border-slate-700/80`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
 
         {/* Logo */}
@@ -84,11 +84,10 @@ export default function Navbar() {
             <Link
               key={link.to}
               to={link.to}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                isActive(link.to)
-                  ? 'text-primary bg-primary/10'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive(link.to)
+                ? 'text-primary bg-primary/10'
+                : 'text-slate-600 dark:text-slate-300 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800'
+                }`}
             >
               {link.label}
             </Link>

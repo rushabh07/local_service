@@ -4,8 +4,9 @@ const Service = require("../models/Service");
 
 // Add service (admin)
 router.post("/add", async (req, res) => {
+    // console.log(req.body.providerId);
     const service = new Service(req.body);
-    console.log(service);
+    // console.log(service);
     await service.save();
     res.send("Service added");
 });
@@ -30,6 +31,13 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
     const service = await Service.findByIdAndDelete(req.params.id);
     res.json(service);
+});
+
+router.get("/provider/:id", async (req, res) => {
+    const { id } = req.params;
+    // console.log(id);
+    const services = await Service.find({ providerId: id });
+    res.json(services);
 });
 
 module.exports = router;

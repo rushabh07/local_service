@@ -3,10 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Save } from 'lucide-react';
 import api from "../../services/api";
 import toast from "react-hot-toast";
+import { useAuth } from "../../context/AuthContext";
 
 export default function EditService() {
   const { serviceId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [service, setService] = useState({
@@ -49,7 +51,7 @@ export default function EditService() {
     try {
       await api.put(`/services/${serviceId}`, service);
       toast.success("Service updated successfully!");
-      navigate("/admin/dashboard/services");
+      navigate(user?.role === 'provider' ? "/provider/dashboard/services" : "/admin/dashboard/services");
     } catch (error) {
       toast.error("Failed to update service. Please try again.");
     } finally {
@@ -65,7 +67,7 @@ export default function EditService() {
     <div className="bg-slate-50 dark:bg-slate-900 min-h-[calc(100vh-64px)] py-10">
       <div className="max-w-4xl mx-auto px-4">
         <button
-          onClick={() => navigate("/admin/dashboard/services")}
+          onClick={() => navigate(user?.role === 'provider' ? "/provider/dashboard/services" : "/admin/dashboard/services")}
           className="flex items-center gap-2 text-indigo-600 font-medium mb-6 hover:text-indigo-700 transition"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Dashboard

@@ -6,6 +6,10 @@ const providerSchema = new mongoose.Schema({
     ref: "User"
   },
 
+  providerId: {
+    type: String
+  },
+
   name: String,
   email: String,
   password: String,

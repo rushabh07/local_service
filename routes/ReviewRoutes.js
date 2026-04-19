@@ -33,6 +33,14 @@ router.get("/approved", async (req, res) => {
 });
 
 
+router.get("/approved/:serviceIds", async (req, res) => {
+    const { serviceIds } = req.params;
+    const serviceIdsArray = serviceIds.split(',');
+    // console.log(serviceIdsArray);
+    const reviews = await Review.find({ approved: true, serviceId: { $in: serviceIdsArray } });
+    res.json(reviews);
+});
+
 
 router.get("/pending", async (req, res) => {
     const reviews = await Review.find({ approved: false });

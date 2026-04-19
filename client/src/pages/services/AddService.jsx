@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save } from 'lucide-react';
 import api from "../../services/api";
 import toast from "react-hot-toast";
+import { useAuth } from "../../context/AuthContext";
 
 export default function AddService() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [service, setService] = useState({
     title: "",
@@ -17,7 +19,6 @@ export default function AddService() {
     duration: "",
     description: ""
   });
-
   const handleChange = (e) => {
     setService({ ...service, [e.target.name]: e.target.value });
   };
@@ -30,9 +31,9 @@ export default function AddService() {
     }
     setLoading(true);
     try {
-      await api.post("/services/add", service);
+      await api.post("/services/add", { ...service, providerId: user?.uid });
       toast.success("Service added successfully!");
-      navigate("/admin/dashboard/services");
+      navigate(user?.role === 'provider' ? "/provider/dashboard/services" : "/admin/dashboard/services");
     } catch (error) {
       toast.error("Failed to add service. Please try again.");
     } finally {
@@ -44,7 +45,7 @@ export default function AddService() {
     <div className="bg-slate-50 dark:bg-slate-900 min-h-screen py-10">
       <div className="max-w-4xl mx-auto px-4">
         <button
-          onClick={() => navigate("/admin/dashboard/services")}
+          onClick={() => navigate(user?.role === 'provider' ? "/provider/dashboard/services" : "/admin/dashboard/services")}
           className="flex items-center gap-2 text-indigo-600 font-medium mb-6 hover:text-indigo-700 transition"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Dashboard

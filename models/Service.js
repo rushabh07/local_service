@@ -6,8 +6,7 @@ const serviceSchema = new mongoose.Schema({
     category: String,
 
     providerId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Provider"
+        type: String
     },
 
     price: Number,

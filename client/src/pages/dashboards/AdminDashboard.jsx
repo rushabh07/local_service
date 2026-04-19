@@ -37,7 +37,7 @@ export default function AdminDashboard() {
   // Handle active tab state carefully to avoid undefined values
   const validTabs = NAV_ITEMS.map((item) => item.id);
   const [activeTab, setActiveTab] = useState(() => {
-     return validTabs.includes(activeTabfromURL) ? activeTabfromURL : 'overview';
+    return validTabs.includes(activeTabfromURL) ? activeTabfromURL : 'overview';
   });
 
   const [loading, setLoading] = useState(false);
@@ -98,7 +98,7 @@ export default function AdminDashboard() {
         await fetchCategories();
       }
     } catch (error) {
-       console.error("Error fetching tab data:", error);
+      console.error("Error fetching tab data:", error);
     } finally {
       setLoading(false);
     }
@@ -126,7 +126,7 @@ export default function AdminDashboard() {
   const deleteItem = async (type, id) => {
     try {
       await api.delete(`/${type}/${id}`);
-      
+
       // Refresh only the affected tab data
       if (type === "services") fetchServices();
       else if (type === "providers") fetchProviders();
@@ -135,8 +135,8 @@ export default function AdminDashboard() {
       else if (type === "reviews") fetchReviews();
       else if (type === "categories") fetchCategories();
     } catch (error) {
-       toast.error(`Failed to delete from ${type}`);
-       console.error(error);
+      toast.error(`Failed to delete from ${type}`);
+      console.error(error);
     }
   };
 
@@ -151,8 +151,8 @@ export default function AdminDashboard() {
 
   // Render proper tab based on activeTab state
   const renderTabContent = () => {
-    if (loading && ['services','providers','users','bookings','reviews','categories'].includes(activeTab)) {
-        return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div></div>;
+    if (loading && ['services', 'providers', 'users', 'bookings', 'reviews', 'categories'].includes(activeTab)) {
+      return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div></div>;
     }
 
     switch (activeTab) {
@@ -176,7 +176,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="dark:bg-slate-900 min-h-[calc(100vh-64px)] font-sans">
+    <div className="dark:bg-slate-900 min-h-full font-sans">
       <div className="flex flex-col md:flex-row min-h-full">
         {/* SIDEBAR */}
         <aside className="w-full md:w-64 shrink-0 bg-slate-900 text-slate-300 flex flex-col pt-4">
@@ -191,11 +191,10 @@ export default function AdminDashboard() {
                 <button
                   key={item.id}
                   onClick={() => handleTabChange(item.id)}
-                  className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                    activeTab === item.id
+                  className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === item.id
                       ? "bg-indigo-600 text-white"
                       : "hover:bg-white/5 hover:text-white"
-                  }`}
+                    }`}
                 >
                   <Icon className="w-5 h-5" />
                   {item.label}
@@ -204,14 +203,14 @@ export default function AdminDashboard() {
             })}
           </nav>
           <div className="p-4 border-t border-slate-800 space-y-2">
-             <div className="px-4 py-3 bg-green-500/10 border border-green-500/20 rounded-xl">
-               <p className="text-xs text-green-500 font-semibold flex items-center gap-2">
-                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" /> All Systems Operational
-               </p>
-             </div>
-             <button onClick={handleLogout} className="flex items-center gap-2 w-full px-4 py-2.5 text-red-400 hover:bg-red-500/10 rounded-xl text-sm font-medium transition-colors">
-               <LogOut className="w-4 h-4" /> Logout
-             </button>
+            <div className="px-4 py-3 bg-green-500/10 border border-green-500/20 rounded-xl">
+              <p className="text-xs text-green-500 font-semibold flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" /> All Systems Operational
+              </p>
+            </div>
+            <button onClick={handleLogout} className="flex items-center gap-2 w-full px-4 py-2.5 text-red-400 hover:bg-red-500/10 rounded-xl text-sm font-medium transition-colors">
+              <LogOut className="w-4 h-4" /> Logout
+            </button>
           </div>
         </aside>
 

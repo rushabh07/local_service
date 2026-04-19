@@ -36,4 +36,21 @@ router.get("/", async (req, res) => {
     res.json(bookings);
 });
 
+router.put("/:id", async (req, res) => {
+    try {
+        const { status } = req.body;
+        const booking = await Bookings.findByIdAndUpdate(req.params.id, { status }, { new: true });
+        res.json(booking);
+    } catch (e) {
+        console.log(e);
+        res.status(500).send("Server error");
+    }
+});
+
+router.get("/provider/:id", async (req, res) => {
+    const { id } = req.params;
+    const bookings = await Bookings.find({ providerId: id });
+    res.json(bookings);
+});
+
 module.exports = router;

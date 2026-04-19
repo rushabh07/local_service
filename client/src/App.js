@@ -137,13 +137,19 @@ function App() {
                       <AdminDashboard />
                     </PrivateRoute>
                   } />
-                </Route>
 
-                <Route path="/admin/dashboard/:activeTabfromURL" element={
-                  <PrivateRoute roles={['admin']}>
-                    <AdminDashboard />
-                  </PrivateRoute>
-                } />
+                  <Route path="/admin/dashboard/:activeTabfromURL" element={
+                    <PrivateRoute roles={['admin']}>
+                      <AdminDashboard />
+                    </PrivateRoute>
+                  } />
+
+                  <Route path="/provider/dashboard/:activeTabfromURL" element={
+                    <PrivateRoute roles={['provider']}>
+                      <ProviderDashboard />
+                    </PrivateRoute>
+                  } />
+                </Route>
 
                 {/* ── 404 ── */}
                 <Route path="*" element={<MainLayout />}>
