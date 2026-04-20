@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 
 const ROLES = [
   { value: 'customer', label: 'Customer', desc: 'Book services', icon: '🛒' },
@@ -44,63 +45,99 @@ export default function Register() {
     setStep(2);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const errs = validateStep2();
-    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
-    setIsLoading(true);
-    // try {
-    //   const user = await register(form);
-    //   toast.success(`Account created! Welcome, ${user.name.split(' ')[0]}! 🎉`);
-    //   const dashMap = { customer: '/user/dashboard', provider: '/provider/dashboard' };
-    //   navigate(dashMap[user.role] || '/', { replace: true });
-    // } catch (err) {
-    //   toast.error(err.message || 'Registration failed');
-    // } finally {
-    //   setIsLoading(false);
-    // }
 
-
-
+  const generateUID = async (role) => {
     try {
-      const user = await register(form);
-      const res = await fetch("http://localhost:3000/api/userroutes/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(form)
+
+      const res = await fetch("http://localhost:3000/api/userroutes/users");
+      const users = await res.json();
+
+      let prefix = "c";
+      if (role === "provider") prefix = "p";
+      if (role === "admin") prefix = "a";
+
+      const roleUsers = users.filter(u => u.role === role);
+
+      let maxNumber = 0;
+
+      roleUsers.forEach(user => {
+        if (user.uid) {
+          const num = parseInt(user.uid.slice(1));
+          if (num > maxNumber) maxNumber = num;
+        }
       });
-      // console.log(form);
-      const data = await res.json();
-      console.log(data);
-      if (!data.reg) {
-        toast.error(data.message || 'Registration failed');
-        return;
-      } else {
 
-        toast.success(`Account created! Welcome, ${user.name.split(' ')[0]}! 🎉`);
-        const dashMap = { customer: '/user/dashboard', provider: '/provider/dashboard' };
-        navigate(dashMap[user.role] || '/', { replace: true });
-      }
+      const nextNumber = maxNumber + 1;
 
-      // alert("Registration Successful");
-
+      return prefix + String(nextNumber).padStart(3, "0");
 
     } catch (error) {
-
-      setServerError("Server error. Try again later.");
-      toast.error(error.message || 'Registration failed');
-
-    }
-    finally {
-      setIsLoading(false);
+      console.error("UID generation failed", error);
+      return null;
     }
   };
 
   const handleChange = (field) => (e) => {
     setForm(f => ({ ...f, [field]: e.target.value }));
     if (errors[field]) setErrors(err => ({ ...err, [field]: '' }));
+  };
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const errs = validateStep2();
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+
+      const uid = await generateUID(form.role);
+
+      const userData = {
+        ...form,
+        uid
+      };
+
+      const user = await register(userData);
+      // console.log(user);
+
+      const res = await fetch("http://localhost:3000/api/userroutes/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(user)
+      });
+
+      const data = await res.json();
+
+      if (!data.reg) {
+        toast.error(data.message || "Registration failed");
+        return;
+      }
+
+      toast.success(`Account created! Welcome, ${form.name.split(" ")[0]}! 🎉`);
+
+      const dashMap = {
+        customer: "/user/dashboard",
+        provider: "/provider/dashboard"
+      };
+
+      navigate(dashMap[form.role] || "/", { replace: true });
+
+    } catch (error) {
+
+      setServerError("Server error. Try again later.");
+      toast.error(error.message || "Registration failed");
+
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

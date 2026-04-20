@@ -126,9 +126,10 @@ export function AuthProvider({ children }) {
     }
 
     const newUser = {
-      id: `u${Date.now()}`,
+      uid: formData.uid,
       name: formData.name,
       email: formData.email,
+      password: formData.password,
       phone: formData.phone || '',
       role: formData.role || 'customer',
       avatar: `https://i.pravatar.cc/150?u=${formData.email}`,

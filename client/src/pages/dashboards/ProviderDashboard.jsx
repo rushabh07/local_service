@@ -133,11 +133,19 @@ export default function ProviderDashboard() {
       const id = user?.uid;
       // console.log(id);
       const servicesData = await api.get(`http://localhost:3000/api/services/provider/${id}`);
-      // console.log(servicesData.data);
-      const res = await api.get(`http://localhost:3000/api/reviews/approved/${servicesData.data.map(s => s.id)}`);
+      // console.log(servicesData.data.map(s => s.id));
+      if (servicesData.data.length === 0) {
+        setReviews([]);
+        return;
+      }
+      else {
+
+        const res = await api.get(`http://localhost:3000/api/reviews/approved/${servicesData.data.map(s => s.id)}`);
+        setReviews(res.data);
+      }
+      // console.log(res.data);
       // const myServicesIds = services.length > 0 ? services.map(s => s._id || s.id) : (await api.get('/services')).data.filter(s => s.providerId === user?._id || s.providerId === user?.id).map(s => s._id);
       // const myReviews = res.data.filter(r => myServicesIds.includes(r.serviceId));
-      setReviews(res.data);
       // console.log(res.data);
     } catch (e) { toast.error("Failed to fetch reviews"); }
   };
@@ -174,6 +182,7 @@ export default function ProviderDashboard() {
     totalBookings: bookings.length,
     completed: completedBookings.length,
     pending: bookings.filter(b => b.status === "Pending").length,
+    cancelled: bookings.filter(b => b.status === "Cancelled").length,
     earnings: completedBookings.reduce((sum, b) => sum + (Number(b.amount) || 2000), 0)
   };
 
@@ -181,6 +190,7 @@ export default function ProviderDashboard() {
     { label: 'Total Bookings', value: stats.totalBookings, icon: Calendar, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/20' },
     { label: 'Completed Jobs', value: stats.completed, icon: LayoutDashboard, color: 'text-success', bg: 'bg-green-50 dark:bg-green-900/20' },
     { label: 'Pending', value: stats.pending, icon: Calendar, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
+    { label: 'Cancelled', value: stats.cancelled, icon: Calendar, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20' },
     { label: 'Total Services', value: services.length, icon: Server, color: 'text-primary', bg: 'bg-primary/10' },
   ];
 

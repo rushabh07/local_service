@@ -23,23 +23,84 @@ export default function AddService() {
     setService({ ...service, [e.target.name]: e.target.value });
   };
 
+  const generateServiceId = async () => {
+    try {
+      const res = await api.get("/services");
+      const services = res.data;
+
+      let maxId = 0;
+
+      services.forEach(service => {
+        const id = Number(service.id);
+        if (id > maxId) maxId = id;
+      });
+
+      return maxId + 1;
+
+    } catch (error) {
+      console.error("ID generation failed", error);
+      return Date.now(); // fallback unique number
+    }
+  };
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   if (!service.title || !service.category || !service.price) {
+  //     toast.error("Please fill in required fields (Name, Category, Price)");
+  //     return;
+  //   }
+  //   setLoading(true);
+  //   try {
+  //     await api.post("/services/add", { ...service, providerId: user?.uid });
+  //     toast.success("Service added successfully!");
+  //     navigate(user?.role === 'provider' ? "/provider/dashboard/services" : "/admin/dashboard/services");
+  //   } catch (error) {
+  //     toast.error("Failed to add service. Please try again.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!service.title || !service.category || !service.price) {
       toast.error("Please fill in required fields (Name, Category, Price)");
       return;
     }
+
     setLoading(true);
+
     try {
-      await api.post("/services/add", { ...service, providerId: user?.uid });
+
+      const id = await generateServiceId();
+
+      const serviceData = {
+        ...service,
+        id,
+        providerId: user?.uid
+      };
+
+      console.log(serviceData);
+      await api.post("/services/add", serviceData);
+
       toast.success("Service added successfully!");
-      navigate(user?.role === 'provider' ? "/provider/dashboard/services" : "/admin/dashboard/services");
+
+      navigate(
+        user?.role === "provider"
+          ? "/provider/dashboard/services"
+          : "/admin/dashboard/services"
+      );
+
     } catch (error) {
       toast.error("Failed to add service. Please try again.");
     } finally {
       setLoading(false);
     }
   };
+
+
 
   return (
     <div className="bg-slate-50 dark:bg-slate-900 min-h-screen py-10">

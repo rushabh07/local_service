@@ -35,12 +35,6 @@ export default function OverviewTab({
           <h1 className="text-2xl font-heading font-bold text-slate-800 dark:text-white">Platform Overview</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Real-time metrics and system health</p>
         </div>
-        <button
-          onClick={() => toast.success('Report exported!')}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors"
-        >
-          <Download className="w-4 h-4" /> Export Report
-        </button>
       </div>
 
       {/* Stat Cards */}
