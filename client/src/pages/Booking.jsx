@@ -9,6 +9,8 @@ import { useNotifications } from '../context/NotificationContext';
 import { formatCurrency, formatDate } from '../utils';
 import { TIME_SLOTS } from '../constants';
 import toast from 'react-hot-toast';
+import { bookingsAPI } from '../services/api';
+import axios from 'axios';
 
 const STEPS = ['Details', 'Payment', 'Confirmed'];
 
@@ -24,12 +26,14 @@ export default function Booking() {
   const { user } = useAuth();
   const { addNotification } = useNotifications();
 
-  const service = location.state?.service || { title: 'Mock Service', price: 500 };
-  const provider = location.state?.provider || { name: 'Mock Provider' };
+  const service = location.state?.service;
+  // console.log("Service: ",service)
+  const provider = location.state?.provider;
+  // console.log("provider: ",provider.map(p => p.id))
 
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [bookingId] = useState(`B-${Math.floor(10000 + Math.random() * 90000)}`);
+  const [bookingId, setBookingId] = useState(`B-${Math.floor(10000 + Math.random() * 90000)}`);
 
   const [details, setDetails] = useState({
     date: new Date(Date.now() + 86400000), // tomorrow
@@ -59,17 +63,37 @@ export default function Booking() {
   const handlePayment = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    await new Promise(r => setTimeout(r, 1800));
-    setIsLoading(false);
-    setStep(3);
-    // Add success notification
-    addNotification({
-      type: 'booking',
-      title: 'Booking Confirmed!',
-      message: `Your booking for ${service.title} (${bookingId}) has been confirmed.`,
-      icon: '✅',
-    });
-    toast.success('Booking confirmed successfully! 🎉', { duration: 4000 });
+
+    try {
+
+      const bookingData = {
+        customerId: user?.uid,
+        providerId: service?.providerId,
+        serviceId: service?.id,
+        date: details.date.toISOString(),
+        time: details.time,
+        address: details.address,
+        note: details.note,
+        amount: Math.round(total),
+      };
+      console.log(bookingData)
+
+      const res = await bookingsAPI.create(bookingData);
+
+      if (res.data && res.data._id) {
+        setBookingId(res.data._id.slice(-6).toUpperCase());
+      }
+
+      setStep(3);
+
+      toast.success('Booking confirmed successfully! 🎉', { duration: 4000 });
+
+    } catch (err) {
+      toast.error('Failed to create booking. Please try again.');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -123,7 +147,7 @@ export default function Booking() {
                 )}
                 <div>
                   <p className="font-bold text-slate-800 dark:text-white">{service.title}</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">by {provider.name}</p>
+                  {/* <p className="text-sm text-slate-500 dark:text-slate-400">by {provider.name}</p> */}
                   <p className="text-primary font-bold">{formatCurrency(service.price)}</p>
                 </div>
               </div>
@@ -267,7 +291,7 @@ export default function Booking() {
                 Your booking ID is <span className="font-bold text-primary">{bookingId}</span>
               </p>
               <p className="text-slate-600 dark:text-slate-400 mb-8 max-w-sm mx-auto">
-                <b>{provider.name}</b> will arrive on <b>{formatDate(details.date.toISOString())}</b> at <b>{details.time}</b>. You'll receive a confirmation SMS shortly.
+                <b>{/*provider.name*/}</b> will arrive on <b>{formatDate(details.date.toISOString())}</b> at <b>{details.time}</b>. You'll receive a confirmation SMS shortly.
               </p>
 
               <div className="grid grid-cols-2 gap-4 max-w-xs mx-auto mb-8 text-sm">

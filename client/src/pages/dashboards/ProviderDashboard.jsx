@@ -180,6 +180,7 @@ export default function ProviderDashboard() {
   const completedBookings = bookings.filter(b => b.status === "Completed");
   const stats = {
     totalBookings: bookings.length,
+    accepted: bookings.filter(b => b.status === "Accepted").length,
     completed: completedBookings.length,
     pending: bookings.filter(b => b.status === "Pending").length,
     cancelled: bookings.filter(b => b.status === "Cancelled").length,
@@ -188,6 +189,7 @@ export default function ProviderDashboard() {
 
   const statCards = [
     { label: 'Total Bookings', value: stats.totalBookings, icon: Calendar, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/20' },
+    { label: 'Accepted', value: stats.accepted, icon: Calendar, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
     { label: 'Completed Jobs', value: stats.completed, icon: LayoutDashboard, color: 'text-success', bg: 'bg-green-50 dark:bg-green-900/20' },
     { label: 'Pending', value: stats.pending, icon: Calendar, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
     { label: 'Cancelled', value: stats.cancelled, icon: Calendar, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20' },

@@ -57,6 +57,7 @@ export default function BookingsTab({ bookings, onUpdateStatus }) {
                           'bg-green-100 text-green-700'
 
                       }`}>
+                      {b.status === 'Accepted' && <CheckCircle className="w-3 h-3" />}
                       {b.status === 'Completed' && <CheckCircle className="w-3 h-3" />}
                       {b.status === 'Pending' && <Clock className="w-3 h-3" />}
                       {b.status || 'Pending'}
@@ -70,6 +71,7 @@ export default function BookingsTab({ bookings, onUpdateStatus }) {
                         className="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-primary focus:border-primary block p-2 dark:bg-slate-700 dark:border-slate-600 dark:placeholder-slate-400 dark:text-white dark:focus:ring-primary dark:focus:border-primary"
                       >
                         <option value="Pending">Pending</option>
+                        <option value="Accepted">Accepted</option>
                         <option value="Completed">Completed</option>
                         <option value="Cancelled">Cancelled</option>
                       </select>

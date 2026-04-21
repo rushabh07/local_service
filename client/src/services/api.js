@@ -65,8 +65,12 @@ export const servicesAPI = {
 };
 
 export const bookingsAPI = {
-  create: (data) => api.post('/bookings', data),
+  create: (data) => {
+    return api.post('/bookings/', data)
+    console.log(data)
+  },
   getMyBookings: () => api.get('/bookings/my'),
+  getByUser: (userId) => api.get(`/bookings/user/${userId}`),
   getById: (id) => api.get(`/bookings/${id}`),
   cancel: (id) => api.patch(`/bookings/${id}/cancel`),
   reschedule: (id, data) => api.patch(`/bookings/${id}/reschedule`, data),
@@ -80,6 +84,7 @@ export const usersAPI = {
 };
 
 export const providerAPI = {
+  getAll: () => api.get('/providers/'),
   getDashboard: () => api.get('/provider/dashboard'),
   toggleAvailability: () => api.patch('/provider/availability'),
   getBookings: () => api.get('/provider/bookings'),
@@ -90,6 +95,17 @@ export const adminAPI = {
   getUsers: (params) => api.get('/admin/users', { params }),
   getProviders: (params) => api.get('/admin/providers', { params }),
   approveProvider: (id) => api.patch(`/admin/providers/${id}/approve`),
+};
+
+
+export const reviewsAPI = {
+  getAll: () => api.get('/reviews'),
+  getApproved: () => api.get('/reviews/approved'),
+  getByUser: (userId) => api.get(`/reviews/user/${userId}`),
+  getByService: (serviceId) => api.get(`/reviews/approved/${serviceId}`),
+  create: (data) => api.post('/reviews', data),
+  approve: (id) => api.put(`/reviews/approve/${id}`),
+  delete: (id) => api.delete(`/reviews/${id}`),
 };
 
 export default api;

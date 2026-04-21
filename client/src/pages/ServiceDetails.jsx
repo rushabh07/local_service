@@ -17,8 +17,10 @@ export default function ServiceDetails() {
   const navigate = useNavigate();
   const { isAuthenticated, user, updateUser } = useAuth();
 
-  const service = location.state?.service || mockServices.find(s => s.id === parseInt(id));
-  const provider = location.state?.provider || mockProviders.find(p => p.id === service?.providerId);
+  const service = location.state?.service;
+  console.log(service)
+  const provider = location.state?.provider;
+  console.log(provider)
   const reviews = mockReviews.filter(r => r.serviceId === service?.id);
   const isFavorited = user?.favorites?.includes(service?.id);
 
@@ -59,14 +61,22 @@ export default function ServiceDetails() {
   return (
     <div className="min-h-screen dark:bg-slate-900 pb-20">
 
-      {/* Breadcrumb */}
-      <div className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-3">
+      {/* Breadcrumb / Back Navigation */}
+      <div className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 sm:px-6 py-3">
         <div className="max-w-6xl mx-auto flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-          <Link to="/" className="hover:text-primary">Home</Link>
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-1.5 mr-1 text-slate-500 hover:text-primary transition-colors font-medium"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">Back</span>
+          </button>
+          <span className="text-slate-300 dark:text-slate-600 hidden sm:inline">|</span>
+          <Link to="/" className="hover:text-primary hidden sm:inline transition-colors">Home</Link>
+          <ChevronRight className="w-3 h-3 hidden sm:inline" />
+          <Link to="/services" className="hover:text-primary transition-colors">Services</Link>
           <ChevronRight className="w-3 h-3" />
-          <Link to="/services" className="hover:text-primary">Services</Link>
-          <ChevronRight className="w-3 h-3" />
-          <span className="text-slate-700 dark:text-slate-200 font-medium truncate">{service.title}</span>
+          <span className="text-slate-700 dark:text-slate-200 font-medium truncate max-w-[200px]">{service.title}</span>
         </div>
       </div>
 
@@ -214,10 +224,10 @@ export default function ServiceDetails() {
           </div>
 
           {/* Right: Booking Card + Provider */}
-          <div className="space-y-5">
+          <div className="sticky top-20 space-y-5">
 
             {/* Booking Card */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 sticky top-20 shadow-card">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-card">
               <div className="mb-4">
                 <div className="flex items-baseline gap-2 mb-1">
                   {service.priceType === 'starting' && <span className="text-xs text-slate-400">Starts at</span>}
@@ -246,46 +256,51 @@ export default function ServiceDetails() {
 
             {/* Provider Card */}
             {provider && (
-              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-card">
-                <h3 className="font-bold text-slate-700 dark:text-slate-300 text-sm mb-4 uppercase tracking-wider">Your Professional</h3>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="relative">
-                    <img src={provider.avatar} alt={provider.name} className="w-14 h-14 rounded-2xl object-cover ring-2 ring-primary/20" />
-                    {provider.isAvailable && (
-                      <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-success border-2 border-white dark:border-slate-800 rounded-full" />
-                    )}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1">
-                      <p className="font-bold text-slate-800 dark:text-white">{provider.name}</p>
-                      {provider.verifiedBadge && <BadgeCheck className="w-4 h-4 text-primary" />}
+              provider
+                .filter(p => p.id === service.providerId)
+                .map((p, i) => (
+
+                  <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-card">
+                    <h3 className="font-bold text-slate-700 dark:text-slate-300 text-sm mb-4 uppercase tracking-wider">Your Professional</h3>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="relative">
+                        <img src={p.avatar} alt={p.name} className="w-14 h-14 rounded-2xl object-cover ring-2 ring-primary/20" />
+                        {p.isAvailable && (
+                          <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-success border-2 border-white dark:border-slate-800 rounded-full" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1">
+                          <p className="font-bold text-slate-800 dark:text-white">{p.name}</p>
+                          {p.verifiedBadge && <BadgeCheck className="w-4 h-4 text-primary" />}
+                        </div>
+                        <p className="text-xs text-slate-500">{p.business}</p>
+                        <Badge status={p.isAvailable ? 'Active' : 'Inactive'} className="mt-1" />
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-500">{provider.business}</p>
-                    <Badge status={provider.isAvailable ? 'Active' : 'Inactive'} className="mt-1" />
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-3 gap-3 mb-4 text-center">
-                  <div className="p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">
-                    <p className="text-lg font-bold text-primary">{provider.rating}</p>
-                    <p className="text-[10px] text-slate-500">Rating</p>
-                  </div>
-                  <div className="p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">
-                    <p className="text-lg font-bold text-slate-800 dark:text-white">{provider.experience}+</p>
-                    <p className="text-[10px] text-slate-500">Years</p>
-                  </div>
-                  <div className="p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">
-                    <p className="text-lg font-bold text-success">{provider.completedJobs}+</p>
-                    <p className="text-[10px] text-slate-500">Jobs</p>
-                  </div>
-                </div>
+                    <div className="grid grid-cols-3 gap-3 mb-4 text-center">
+                      <div className="p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                        <p className="text-lg font-bold text-primary">{p.rating}</p>
+                        <p className="text-[10px] text-slate-500">Rating</p>
+                      </div>
+                      <div className="p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                        <p className="text-lg font-bold text-slate-800 dark:text-white">{p.experience}+</p>
+                        <p className="text-[10px] text-slate-500">Years</p>
+                      </div>
+                      <div className="p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                        <p className="text-lg font-bold text-success">{p.completedJobs}+</p>
+                        <p className="text-[10px] text-slate-500">Jobs</p>
+                      </div>
+                    </div>
 
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">{provider.bio}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">{p.bio}</p>
 
-                <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                  <MapPin className="w-3.5 h-3.5" /> {provider.area}
-                </div>
-              </div>
+                    <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                      <MapPin className="w-3.5 h-3.5" /> {p.area}
+                    </div>
+                  </div>
+                ))
             )}
           </div>
         </div>

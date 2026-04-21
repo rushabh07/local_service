@@ -3,9 +3,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Search, SlidersHorizontal, X, Star, MapPin, ChevronDown, Grid3X3, List } from 'lucide-react';
 import ServiceCard from '../components/service/ServiceCard';
 import { SkeletonCard } from '../components/common/SkeletonCard';
-import { mockServices, mockProviders, categories } from '../data/mockData';
+// import { mockServices, mockProviders, categories } from '../data/mockData';
 import { SORT_OPTIONS, PRICE_RANGES } from '../constants';
 import { useDebounce } from '../hooks/useDebounce';
+import { servicesAPI, providerAPI } from '../services/api';
+import axios from 'axios';
 
 const DELAY_MS = 600;
 
@@ -23,56 +25,96 @@ export default function ServicesList() {
   const [viewMode, setViewMode] = useState('grid');
   const [isLoading, setIsLoading] = useState(false);
   const [displayedServices, setDisplayedServices] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [provider, setProvider] = useState([]);
 
   const debouncedSearch = useDebounce(searchInput, 400);
 
-  // Simulate loading when filters change
+
+  useEffect(() => {
+    const fetchProviders = async () => {
+      try {
+        const res = await providerAPI.getAll();
+        // console.log("ProviderData: ",res.data); 
+        setProvider(res.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchProviders();
+  }, []);
+
+
   const applyFilters = useCallback(() => {
     setIsLoading(true);
-    setTimeout(() => {
-      let result = [...mockServices];
 
-      // Category filter
-      if (activeCategory !== 'All') {
-        result = result.filter(s => s.category === activeCategory);
+    setTimeout(async () => {
+      try {
+        const res = await servicesAPI.getAll();
+        const categories = await axios.get("http://localhost:3000/api/categories/");
+        // console.log(categories.data)
+        setCategories(categories.data)
+
+        let services = res.data; // database services
+
+        // console.log("services: ",services.map(s => s.providerId))
+        // Category filter
+        if (activeCategory !== 'All') {
+          services = services.filter(s => s.category === activeCategory);
+        }
+
+        // Search filter
+        if (debouncedSearch) {
+          const q = debouncedSearch.toLowerCase();
+          services = services.filter(s =>
+            s.title.toLowerCase().includes(q) ||
+            s.category.toLowerCase().includes(q) ||
+            (s.description || "").toLowerCase().includes(q)
+          );
+        }
+
+        // Price filter
+        if (priceRange) {
+          services = services.filter(
+            s => s.price >= priceRange.min && s.price <= priceRange.max
+          );
+        }
+
+        // Rating filter
+        if (minRating > 0) {
+          services = services.filter(s => s.rating >= minRating);
+        }
+
+        // Sorting
+        switch (sortBy) {
+          case 'price_asc':
+            services.sort((a, b) => a.price - b.price);
+            break;
+
+          case 'price_desc':
+            services.sort((a, b) => b.price - a.price);
+            break;
+
+          case 'reviews':
+            services.sort((a, b) => b.reviewCount - a.reviewCount);
+            break;
+
+          default:
+            services.sort((a, b) => b.rating - a.rating);
+            break;
+        }
+        // console.log(services)
+        setDisplayedServices(services);
+
+      } catch (error) {
+        console.error("Failed to fetch services", error);
       }
 
-      // Search filter
-      if (debouncedSearch) {
-        const q = debouncedSearch.toLowerCase();
-        result = result.filter(s =>
-          s.title.toLowerCase().includes(q) ||
-          s.category.toLowerCase().includes(q) ||
-          s.description.toLowerCase().includes(q)
-        );
-      }
-
-      // Price range
-      if (priceRange) {
-        result = result.filter(s => s.price >= priceRange.min && s.price <= priceRange.max);
-      }
-
-      // Min rating
-      if (minRating > 0) {
-        result = result.filter(s => s.rating >= minRating);
-      }
-
-      // Sort
-      switch (sortBy) {
-        case 'price_asc': result.sort((a, b) => a.price - b.price); break;
-        case 'price_desc': result.sort((a, b) => b.price - a.price); break;
-        case 'experience': result.sort((a, b) => {
-          const pA = mockProviders.find(p => p.id === a.providerId);
-          const pB = mockProviders.find(p => p.id === b.providerId);
-          return (pB?.experience || 0) - (pA?.experience || 0);
-        }); break;
-        case 'reviews': result.sort((a, b) => b.reviewCount - a.reviewCount); break;
-        default: result.sort((a, b) => b.rating - a.rating); break;
-      }
-
-      setDisplayedServices(result);
       setIsLoading(false);
+
     }, DELAY_MS);
+
   }, [activeCategory, debouncedSearch, priceRange, minRating, sortBy]);
 
   useEffect(() => { applyFilters(); }, [applyFilters]);
@@ -102,7 +144,7 @@ export default function ServicesList() {
             Find Your Service
           </h1>
           <p className="text-white/70 text-center mb-8">
-            {mockServices.length}+ professionals ready to help you today
+            {displayedServices.length}+ professionals ready to help you today
           </p>
           {/* Search */}
           <div className="flex gap-2 bg-white dark:bg-slate-800 rounded-2xl p-2 shadow-2xl max-w-2xl mx-auto">
@@ -224,11 +266,11 @@ export default function ServicesList() {
           </button>
           {categories.map(cat => (
             <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
+              key={cat.name}
+              onClick={() => setActiveCategory(cat.name)}
               className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-colors shrink-0 ${activeCategory === cat ? 'bg-slate-800 dark:bg-white text-white dark:text-slate-800 shadow-md' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-primary'}`}
             >
-              {cat}
+              {cat.name}
             </button>
           ))}
         </div>
@@ -241,8 +283,9 @@ export default function ServicesList() {
         ) : displayedServices.length > 0 ? (
           <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1 max-w-3xl'}`}>
             {displayedServices.map(service => {
-              const provider = mockProviders.find(p => p.id === service.providerId);
-              return <ServiceCard key={service.id} service={service} provider={provider} />;
+
+              return <ServiceCard key={service.id} service={service} provider={provider}
+              />;
             })}
           </div>
         ) : (

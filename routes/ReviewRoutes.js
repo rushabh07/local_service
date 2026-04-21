@@ -47,6 +47,16 @@ router.get("/pending", async (req, res) => {
     res.json(reviews);
 });
 
+// Get reviews submitted by a specific user
+router.get("/user/:userId", async (req, res) => {
+    try {
+        const reviews = await Review.find({ userId: req.params.userId });
+        res.json(reviews);
+    } catch (error) {
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
 router.put("/approve/:id", async (req, res) => {
     await Review.findByIdAndUpdate(req.params.id, { approved: true });
     res.send("Approved");
