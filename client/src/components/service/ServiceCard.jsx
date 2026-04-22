@@ -10,6 +10,7 @@ export default function ServiceCard({ service, provider }) {
   const navigate = useNavigate();
   const [imgError, setImgError] = useState(false);
   const isFavorited = user?.favorites?.includes(service.id);
+  // console.log(provider);
 
   const handleFavorite = (e) => {
     e.preventDefault();
@@ -42,22 +43,21 @@ export default function ServiceCard({ service, provider }) {
         ) : (
           <div className="w-full h-full flex items-center justify-center text-5xl bg-gradient-to-br from-primary/10 to-secondary/10">
             {service.category === 'Electrician' ? '⚡' :
-             service.category === 'Plumber' ? '🔧' :
-             service.category === 'Cleaning' ? '🧹' :
-             service.category === 'AC Repair' ? '❄️' :
-             service.category === 'Painting' ? '🎨' :
-             service.category === 'Carpentry' ? '🪵' : '🏠'}
+              service.category === 'Plumber' ? '🔧' :
+                service.category === 'Cleaning' ? '🧹' :
+                  service.category === 'AC Repair' ? '❄️' :
+                    service.category === 'Painting' ? '🎨' :
+                      service.category === 'Carpentry' ? '🪵' : '🏠'}
           </div>
         )}
 
         {/* Favorite btn */}
         <button
           onClick={handleFavorite}
-          className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 shadow-md ${
-            isFavorited
-              ? 'bg-danger text-white scale-110'
-              : 'bg-white/90 dark:bg-slate-800/90 text-slate-400 hover:text-danger hover:scale-110'
-          }`}
+          className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 shadow-md ${isFavorited
+            ? 'bg-danger text-white scale-110'
+            : 'bg-white/90 dark:bg-slate-800/90 text-slate-400 hover:text-danger hover:scale-110'
+            }`}
           aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
         >
           <Heart className="w-4 h-4" fill={isFavorited ? 'currentColor' : 'none'} />
@@ -85,8 +85,11 @@ export default function ServiceCard({ service, provider }) {
         {provider && (
           <div className="flex items-center gap-2 mb-3">
             <img
-              src={provider.avatar}
-              alt={provider.name}
+              src={provider?.avatar || "https://i.pravatar.cc/150?u=default"}
+              alt={provider?.name || "Provider"}
+              onError={(e) => {
+                e.target.src = "https://i.pravatar.cc/150?u=default";
+              }}
               className="w-6 h-6 rounded-full object-cover border border-slate-200"
             />
             <span className="text-xs text-slate-500 dark:text-slate-400 truncate">{provider.name}</span>

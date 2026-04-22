@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import Badge from '../../components/common/Badge';
 import { useAuth } from '../../context/AuthContext';
-import { mockBookings, mockServices, mockProviders } from '../../data/mockData';
+import { bookingsAPI, servicesAPI, providerAPI } from '../../services/api';
 import { formatCurrency, formatDate, getInitials } from '../../utils';
 import { reviewsAPI } from '../../services/api';
 import toast from 'react-hot-toast';
@@ -24,6 +24,7 @@ const NAV_ITEMS = [
 // ── Star Rating Picker ──
 function StarPicker({ value, onChange }) {
   const [hovered, setHovered] = useState(0);
+
   return (
     <div className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map(n => (
@@ -52,6 +53,7 @@ function LeaveReviewModal({ booking, service, user, onClose, onSubmitted }) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -154,6 +156,8 @@ export default function UserDashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [services, setServices] = useState([]);
+  const [providers, setProviders] = useState([]);
 
   // Review state
   const [userReviews, setUserReviews] = useState([]);
@@ -166,7 +170,9 @@ export default function UserDashboard() {
 
   const userId = user?.uid || user?.id || user?._id;
   const filteredBookings = statusFilter === 'All' ? userBookings : userBookings.filter(b => b.status === statusFilter);
-  const favoriteServices = mockServices.filter(s => user?.favorites?.includes(s.id));
+  const favoriteServices = services.filter(s =>
+    user?.favorites?.includes(String(s.id))
+  );
 
   const stats = [
     { label: 'Total Bookings', value: userBookings.length, color: 'text-primary', bg: 'bg-primary/10' },
@@ -177,29 +183,48 @@ export default function UserDashboard() {
   ];
 
   useEffect(() => {
+    fetchServices();
+    fetchProviders();
+  }, []);
+
+  const fetchServices = async () => {
+    try {
+      const res = await servicesAPI.getAll();
+      setServices(res.data);
+    } catch (err) {
+      console.error("Failed to load services", err);
+    }
+  };
+
+  const fetchProviders = async () => {
+    try {
+      const res = await providerAPI.getAll();
+      setProviders(res.data);
+    } catch (err) {
+      console.error("Failed to load providers", err);
+    }
+  };
+
+  useEffect(() => {
     fetchBookings();
   }, [userId]);
 
   const fetchBookings = async () => {
     try {
-      const { bookingsAPI } = require('../../services/api');
-      const res = await bookingsAPI.getByUser(userId || 'u1');
-      const realBookings = res.data.map(b => ({ ...b, id: b._id || b.id }));
-      const mocks = mockBookings.filter(b => b.customerId === (userId || 'u1'));
-      // Merge unique
-      const merged = [...realBookings, ...mocks];
-      const unique = Array.from(new Map(merged.map(item => [item.id, item])).values());
-      // Sort by date descending
-      unique.sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt));
-      setUserBookings(unique);
+      const res = await bookingsAPI.getByUser(userId);
+      const realBookings = res.data.map(b => ({
+        ...b,
+        id: b._id || b.id
+      }));
+
+      setUserBookings(realBookings);
     } catch (err) {
       console.error(err);
-      setUserBookings(mockBookings.filter(b => b.customerId === (userId || 'u1')));
+      setUserBookings([]);
     } finally {
       setBookingsLoading(false);
     }
   };
-
   // Fetch user reviews when reviews tab is active
   useEffect(() => {
     if (activeTab === 'reviews') {
@@ -231,8 +256,8 @@ export default function UserDashboard() {
   const handleLogout = () => { logout(); navigate('/'); toast.success('Logged out successfully!'); };
 
   const handleRebook = (booking) => {
-    const service = mockServices.find(s => s.id === booking.serviceId);
-    const provider = mockProviders.find(p => p.id === booking.providerId);
+    const service = services.find(s => String(s.id) === String(booking.serviceId));
+    const provider = providers.find(p => String(p.id) === String(booking.providerId));
     navigate('/booking', { state: { service, provider } });
   };
 
@@ -242,7 +267,7 @@ export default function UserDashboard() {
   };
 
   const openReviewModal = (booking) => {
-    const service = mockServices.find(s => s.id === booking.serviceId);
+    const service = services.find(s => String(s.id) === String(booking.serviceId));
     setReviewModal({ booking, service });
   };
 
@@ -357,7 +382,7 @@ export default function UserDashboard() {
                     </thead>
                     <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
                       {userBookings.slice(0, 5).map(b => {
-                        const svc = mockServices.find(s => String(s.id) === String(b.serviceId));
+                        const svc = services.find(s => String(s.id) === String(b.serviceId));
                         return (
                           <tr key={b.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                             <td className="px-6 py-4 font-medium text-slate-800 dark:text-white">{svc?.title || '—'}</td>
@@ -425,8 +450,8 @@ export default function UserDashboard() {
               ) : (
                 <div className="space-y-4">
                   {filteredBookings.map(b => {
-                    const svc = mockServices.find(s => String(s.id) === String(b.serviceId));
-                    const prov = mockProviders.find(p => p.id === b.providerId);
+                    const svc = services.find(s => String(s.id) === String(b.serviceId));
+                    const prov = providers.find(p => p.id === b.providerId);
                     return (
                       <div key={b.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-card p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                         <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-2xl shrink-0">
@@ -484,7 +509,7 @@ export default function UserDashboard() {
                   </div>
                   <div className="divide-y divide-slate-50 dark:divide-slate-700">
                     {completedBookings.map(b => {
-                      const svc = mockServices.find(s => String(s.id) === String(b.serviceId));
+                      const svc = services.find(s => String(s.id) === String(b.serviceId));
                       const alreadyReviewed = submittedServiceIds.has(String(b.serviceId));
                       return (
                         <div key={b.id} className="flex items-center gap-4 px-6 py-4">
@@ -538,7 +563,7 @@ export default function UserDashboard() {
                   <h2 className="font-bold text-slate-700 dark:text-slate-300 mb-4 text-sm uppercase tracking-wider">Your Submitted Reviews</h2>
                   <div className="space-y-4">
                     {userReviews.map(r => {
-                      const svc = mockServices.find(s => String(s.id) === String(r.serviceId));
+                      const svc = services.find(s => String(s.id) === String(r.serviceId));
                       return (
                         <div key={r._id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-card p-5">
                           <div className="flex items-start justify-between gap-4">
@@ -595,7 +620,7 @@ export default function UserDashboard() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {favoriteServices.map(s => {
-                    const prov = mockProviders.find(p => p.id === s.providerId);
+                    const prov = providers.find(p => String(p.id) === String(s.providerId));
                     return (
                       <div key={s.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-card p-5 flex gap-4">
                         {s.image
@@ -669,7 +694,7 @@ export default function UserDashboard() {
                     </thead>
                     <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
                       {userBookings.map(b => {
-                        const svc = mockServices.find(s => String(s.id) === String(b.serviceId));
+                        const svc = services.find(s => String(s.id) === String(b.serviceId));
                         return (
                           <tr key={b.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                             <td className="px-6 py-4 font-mono text-xs text-primary">{b.id}</td>

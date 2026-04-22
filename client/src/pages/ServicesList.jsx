@@ -45,6 +45,12 @@ export default function ServicesList() {
     fetchProviders();
   }, []);
 
+  // const provider = providerData.find(
+  //   (p) => String(p.id) === String(displayedServices.providerId)
+  // );
+
+  // console.log("ProviderData: ", provider)
+  // console.log("Provider: ", provider)
 
   const applyFilters = useCallback(() => {
     setIsLoading(true);
@@ -284,8 +290,19 @@ export default function ServicesList() {
           <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1 max-w-3xl'}`}>
             {displayedServices.map(service => {
 
-              return <ServiceCard key={service.id} service={service} provider={provider}
-              />;
+              const serviceProvider = provider.find(
+                (p) =>
+                  String(p.id) === String(service.providerId) ||
+                  String(p.providerId) === String(service.providerId)
+              );
+
+              return (
+                <ServiceCard
+                  key={service.id}
+                  service={service}
+                  provider={serviceProvider}
+                />
+              );
             })}
           </div>
         ) : (

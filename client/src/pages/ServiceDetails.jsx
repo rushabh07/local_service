@@ -256,51 +256,61 @@ export default function ServiceDetails() {
 
             {/* Provider Card */}
             {provider && (
-              provider
-                .filter(p => p.id === service.providerId)
-                .map((p, i) => (
+              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-card">
+                <h3 className="font-bold text-slate-700 dark:text-slate-300 text-sm mb-4 uppercase tracking-wider">
+                  Your Professional
+                </h3>
 
-                  <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-card">
-                    <h3 className="font-bold text-slate-700 dark:text-slate-300 text-sm mb-4 uppercase tracking-wider">Your Professional</h3>
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="relative">
-                        <img src={p.avatar} alt={p.name} className="w-14 h-14 rounded-2xl object-cover ring-2 ring-primary/20" />
-                        {p.isAvailable && (
-                          <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-success border-2 border-white dark:border-slate-800 rounded-full" />
-                        )}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1">
-                          <p className="font-bold text-slate-800 dark:text-white">{p.name}</p>
-                          {p.verifiedBadge && <BadgeCheck className="w-4 h-4 text-primary" />}
-                        </div>
-                        <p className="text-xs text-slate-500">{p.business}</p>
-                        <Badge status={p.isAvailable ? 'Active' : 'Inactive'} className="mt-1" />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3 mb-4 text-center">
-                      <div className="p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">
-                        <p className="text-lg font-bold text-primary">{p.rating}</p>
-                        <p className="text-[10px] text-slate-500">Rating</p>
-                      </div>
-                      <div className="p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">
-                        <p className="text-lg font-bold text-slate-800 dark:text-white">{p.experience}+</p>
-                        <p className="text-[10px] text-slate-500">Years</p>
-                      </div>
-                      <div className="p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">
-                        <p className="text-lg font-bold text-success">{p.completedJobs}+</p>
-                        <p className="text-[10px] text-slate-500">Jobs</p>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">{p.bio}</p>
-
-                    <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                      <MapPin className="w-3.5 h-3.5" /> {p.area}
-                    </div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="relative">
+                    <img
+                      src={provider.avatar}
+                      alt={provider.name}
+                      className="w-14 h-14 rounded-2xl object-cover ring-2 ring-primary/20"
+                    />
+                    {provider.isAvailable && (
+                      <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-success border-2 border-white dark:border-slate-800 rounded-full" />
+                    )}
                   </div>
-                ))
+
+                  <div>
+                    <div className="flex items-center gap-1">
+                      <p className="font-bold text-slate-800 dark:text-white">{provider.name}</p>
+                      {provider.verifiedBadge && <BadgeCheck className="w-4 h-4 text-primary" />}
+                    </div>
+
+                    <p className="text-xs text-slate-500">{provider.business}</p>
+                    <Badge status={provider.isAvailable ? 'Active' : 'Inactive'} className="mt-1" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3 mb-4 text-center">
+                  <div className="p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                    <p className="text-lg font-bold text-primary">{provider.rating}</p>
+                    <p className="text-[10px] text-slate-500">Rating</p>
+                  </div>
+
+                  <div className="p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                    <p className="text-lg font-bold text-slate-800 dark:text-white">
+                      {provider.experience}+
+                    </p>
+                    <p className="text-[10px] text-slate-500">Years</p>
+                  </div>
+
+                  <div className="p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                    <p className="text-lg font-bold text-success">{provider.completedJobs}+</p>
+                    <p className="text-[10px] text-slate-500">Jobs</p>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                  {provider.bio}
+                </p>
+
+                <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                  <MapPin className="w-3.5 h-3.5" /> {provider.area}
+                </div>
+              </div>
             )}
           </div>
         </div>

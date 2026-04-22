@@ -79,11 +79,14 @@ export default function AddService() {
       const serviceData = {
         ...service,
         id,
+        price: Number(service.price),
+        priceType: service.priceType === 'start' ? 'starting' : service.priceType,
+        includes: service.includes ? service.includes.split(',').map(item => item.trim()) : [],
         providerId: user?.uid
       };
 
       console.log(serviceData);
-      await api.post("/services/add", serviceData);
+      await api.post("http://localhost:3000/api/services/add", serviceData);
 
       toast.success("Service added successfully!");
 
@@ -158,7 +161,7 @@ export default function AddService() {
               >
                 <option value="">Select Price Type</option>
                 <option value="fixed">Fixed</option>
-                <option value="start">Starting From</option>
+                <option value="starting">Starting From</option>
               </select>
             </div>
 

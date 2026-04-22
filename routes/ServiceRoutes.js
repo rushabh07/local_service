@@ -4,9 +4,9 @@ const Service = require("../models/Service");
 
 // Add service (admin)
 router.post("/add", async (req, res) => {
-    // console.log(req.body.providerId);
+    console.log(req.body.providerId);
     const service = new Service(req.body);
-    // console.log(service);
+    console.log(service);
     await service.save();
     res.send("Service added");
 });
