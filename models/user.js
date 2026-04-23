@@ -16,10 +16,10 @@ const userSchema = new mongoose.Schema({
     avatar: String,
     address: String,
 
-    favorites: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Service"
-    }],
+    favorites: {
+        type: [Number],
+        default: []
+    },
 
     joinedAt: {
         type: Date,

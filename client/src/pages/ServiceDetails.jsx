@@ -4,25 +4,42 @@ import {
   Star, MapPin, Clock, BadgeCheck, Heart, Share2,
   ChevronRight, CheckCircle, Phone, ArrowLeft,
 } from 'lucide-react';
-import { mockServices, mockProviders, mockReviews } from '../data/mockData';
+// import { mockServices, mockProviders, mockReviews } from '../data/mockData';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/common/Button';
 import Badge from '../components/common/Badge';
 import { formatCurrency, formatDate, getInitials } from '../utils';
 import toast from 'react-hot-toast';
+import { reviewsAPI, usersAPI } from "../services/api";
+import { useEffect } from "react";
 
 export default function ServiceDetails() {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, user, updateUser } = useAuth();
+  const [reviews, setReviews] = useState([]);
 
   const service = location.state?.service;
-  console.log(service)
   const provider = location.state?.provider;
-  console.log(provider)
-  const reviews = mockReviews.filter(r => r.serviceId === service?.id);
-  const isFavorited = user?.favorites?.includes(service?.id);
+  const isFavorited = (user?.favorites || []).map(Number).includes(Number(service?.id));
+
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        if (!service?.id) return;
+
+        const res = await reviewsAPI.getByService(service.id);
+        setReviews(res.data);
+
+      } catch (error) {
+        console.error("Failed to fetch reviews:", error);
+      }
+    };
+
+    fetchReviews();
+  }, [service]);
 
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -36,12 +53,26 @@ export default function ServiceDetails() {
     );
   }
 
-  const handleFavorite = () => {
+  const handleFavorite = async () => {
     if (!isAuthenticated) { navigate('/login'); return; }
+
+    // // DEBUG LOGS
+    // console.log("ServiceDetails: user object:", user);
+    // console.log("ServiceDetails: user.uid:", user?.uid);
+
     const favs = user.favorites || [];
-    const updated = isFavorited ? favs.filter(fid => fid !== service.id) : [...favs, service.id];
-    updateUser({ favorites: updated });
-    toast.success(isFavorited ? 'Removed from favorites' : 'Added to favorites! ❤️');
+    const updated = isFavorited ? favs.map(Number).filter(fid => fid !== Number(service.id)) : [...favs.map(Number), Number(service.id)];
+
+    // console.log("ServiceDetails: updated favorites:", updated);
+
+    try {
+      const res = await usersAPI.updateFav(user?.uid, updated);
+      updateUser({ favorites: res.data.user.favorites });
+      toast.success(isFavorited ? 'Removed from favorites' : 'Added to favorites! ❤️');
+    } catch (error) {
+      console.error("ServiceDetails: error updating favorites:", error);
+      toast.error('Failed to update favorites');
+    }
   };
 
   const handleBook = () => {
@@ -284,7 +315,7 @@ export default function ServiceDetails() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 mb-4 text-center">
+                {/* <div className="grid grid-cols-3 gap-3 mb-4 text-center">
                   <div className="p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">
                     <p className="text-lg font-bold text-primary">{provider.rating}</p>
                     <p className="text-[10px] text-slate-500">Rating</p>
@@ -301,7 +332,7 @@ export default function ServiceDetails() {
                     <p className="text-lg font-bold text-success">{provider.completedJobs}+</p>
                     <p className="text-[10px] text-slate-500">Jobs</p>
                   </div>
-                </div>
+                </div> */}
 
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
                   {provider.bio}

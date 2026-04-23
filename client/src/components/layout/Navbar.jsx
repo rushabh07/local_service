@@ -206,7 +206,7 @@ export default function Navbar() {
                         <User className="w-4 h-4" /> Profile
                       </Link>
                       {user?.role === 'customer' && (
-                        <Link to="/user/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                        <Link to="/user/dashboard" state={{ activeTab: 'favorites' }} className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                           <Heart className="w-4 h-4" /> Favorites
                         </Link>
                       )}

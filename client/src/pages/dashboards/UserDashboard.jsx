@@ -7,10 +7,12 @@ import {
 } from 'lucide-react';
 import Badge from '../../components/common/Badge';
 import { useAuth } from '../../context/AuthContext';
-import { bookingsAPI, servicesAPI, providerAPI } from '../../services/api';
+import { bookingsAPI, servicesAPI, providerAPI, usersAPI } from '../../services/api';
 import { formatCurrency, formatDate, getInitials } from '../../utils';
 import { reviewsAPI } from '../../services/api';
 import toast from 'react-hot-toast';
+import { useLocation } from 'react-router-dom';
+import EditProfile from '../../components/common/EditProfile';
 
 const NAV_ITEMS = [
   { id: 'overview', label: 'Overview', icon: Home },
@@ -168,10 +170,23 @@ export default function UserDashboard() {
   const [userBookings, setUserBookings] = useState([]);
   const [bookingsLoading, setBookingsLoading] = useState(true);
 
-  const userId = user?.uid || user?.id || user?._id;
+  const userId = user?.uid;
   const filteredBookings = statusFilter === 'All' ? userBookings : userBookings.filter(b => b.status === statusFilter);
+  // const favoriteServices = services.filter(s =>
+  //   user?.favorites.includes(String(s.id))
+  // );
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.activeTab === 'favorites') {
+      setActiveTab('favorites');
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate]);
+
+
   const favoriteServices = services.filter(s =>
-    user?.favorites?.includes(String(s.id))
+    (user?.favorites || []).map(Number).includes(Number(s.id))
   );
 
   const stats = [
@@ -186,6 +201,26 @@ export default function UserDashboard() {
     fetchServices();
     fetchProviders();
   }, []);
+
+  useEffect(() => {
+    if (user?.uid) {
+      fetchFavorites();
+    }
+  }, [user?.uid]);
+
+  const fetchFavorites = async () => {
+    try {
+      const userId = user?.uid;
+      const res = await usersAPI.getFavorites(userId);
+
+      updateUser({
+        favorites: res.data.favorites || []
+      });
+
+    } catch (err) {
+      console.error("Failed to load favorites", err);
+    }
+  };
 
   const fetchServices = async () => {
     try {
@@ -261,9 +296,25 @@ export default function UserDashboard() {
     navigate('/booking', { state: { service, provider } });
   };
 
-  const handleRemoveFavorite = (serviceId) => {
-    updateUser({ favorites: user.favorites.filter(id => id !== serviceId) });
-    toast.success('Removed from favorites');
+  const handleRemoveFavorite = async (serviceId) => {
+    // DEBUG LOGS
+    // console.log("UserDashboard: user object:", user);
+    // console.log("UserDashboard: user.uid:", user?.uid);
+
+    // const updated = user.favorites.filter(id => id !== serviceId);
+
+    const updated = (user.favorites || []).filter(id => id !== Number(serviceId));
+
+    // console.log("UserDashboard: updated favorites:", updated);
+
+    try {
+      const res = await usersAPI.updateFav(user?.uid, updated);
+      updateUser({ favorites: res.data.user.favorites });
+      toast.success('Removed from favorites');
+    } catch (error) {
+      console.error("UserDashboard: error updating favorites:", error);
+      toast.error('Failed to remove favorite');
+    }
   };
 
   const openReviewModal = (booking) => {
@@ -649,33 +700,7 @@ export default function UserDashboard() {
 
           {/* ── PROFILE ── */}
           {activeTab === 'profile' && (
-            <div className="animate-fade-in max-w-lg space-y-6">
-              <h1 className="text-2xl font-heading font-bold text-slate-800 dark:text-white">My Profile</h1>
-              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-card p-6">
-                <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100 dark:border-slate-700">
-                  {user?.avatar
-                    ? <img src={user.avatar} alt={user.name} className="w-20 h-20 rounded-2xl object-cover ring-4 ring-primary/20" />
-                    : <div className="w-20 h-20 rounded-2xl bg-primary text-white text-2xl font-bold flex items-center justify-center">{getInitials(user?.name)}</div>
-                  }
-                  <div>
-                    <h2 className="text-xl font-bold text-slate-800 dark:text-white">{user?.name}</h2>
-                    <p className="text-sm text-slate-500">{user?.email}</p>
-                    <span className="inline-block mt-1 text-xs font-bold px-2 py-0.5 bg-primary/10 text-primary rounded-full capitalize">{user?.role}</span>
-                  </div>
-                </div>
-                {[
-                  { label: 'Email', value: user?.email || '—' },
-                  { label: 'Phone', value: user?.phone || 'Not added' },
-                  { label: 'Address', value: user?.address || 'Not added' },
-                  { label: 'Member Since', value: formatDate(user?.joinedAt || new Date().toISOString()) },
-                ].map(field => (
-                  <div key={field.label} className="flex justify-between items-center py-3 border-b border-slate-50 dark:border-slate-700/50 last:border-0">
-                    <span className="text-sm text-slate-500 dark:text-slate-400">{field.label}</span>
-                    <span className="text-sm font-semibold text-slate-800 dark:text-white text-right max-w-[200px] truncate">{field.value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <EditProfile />
           )}
 
           {/* ── PAYMENTS ── */}

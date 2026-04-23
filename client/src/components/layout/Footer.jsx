@@ -5,30 +5,28 @@ import { Zap, Mail, Phone, MapPin } from 'lucide-react';
 // Inline SVG social icons (lucide-react v1 doesn't include these)
 const FacebookIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
   </svg>
 );
 const TwitterIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/>
+    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
   </svg>
 );
 const InstagramIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
   </svg>
 );
 const YoutubeIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-    <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon fill="white" points="9.75,15.02 15.5,12 9.75,8.98 9.75,15.02"/>
+    <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z" /><polygon fill="white" points="9.75,15.02 15.5,12 9.75,8.98 9.75,15.02" />
   </svg>
 );
 
 const serviceLinks = ['Electrician', 'Plumber', 'AC Repair', 'Cleaning', 'Painting', 'Carpentry'];
 const companyLinks = [
   { label: 'About Us', to: '/about' },
-  { label: 'Careers', to: '/careers' },
-  { label: 'Blog', to: '/blog' },
   { label: 'Contact Us', to: '/contact' },
 ];
 const supportLinks = [
@@ -120,30 +118,6 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-
-            <div className="mt-6">
-              <p className="text-xs font-semibold text-slate-500 mb-3 uppercase tracking-wider">Download App</p>
-              <div className="flex flex-col gap-2">
-                <a
-                  href="https://www.apple.com/app-store/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg transition-colors"
-                >
-                  <span className="text-lg">🍎</span>
-                  <div><p className="text-[10px] text-slate-400">Available on</p><p className="text-xs font-bold text-white">App Store</p></div>
-                </a>
-                <a
-                  href="https://play.google.com/store"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg transition-colors"
-                >
-                  <span className="text-lg">🤖</span>
-                  <div><p className="text-[10px] text-slate-400">Get it on</p><p className="text-xs font-bold text-white">Google Play</p></div>
-                </a>
-              </div>
-            </div>
           </div>
         </div>
 

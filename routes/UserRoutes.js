@@ -6,10 +6,10 @@ const jwt = require("jsonwebtoken");// Register
 router.post("/register", async (req, res) => {
     try {
         const { role, email } = req.body;
-        
+
         const existingUser = await User.findOne({ email });
         const existingProvider = await Provider.findOne({ email });
-        
+
         if (existingUser || existingProvider) {
             return res.json({ message: "This user is alredy exists.", reg: false });
         }
@@ -79,7 +79,7 @@ router.post("/login", async (req, res) => {
 router.get("/", async (req, res) => {
     const users = await User.find();
     const providers = await Provider.find();
-    
+
     const mappedProviders = providers.map(p => {
         const obj = p.toObject();
         obj.role = "provider";
@@ -90,13 +90,31 @@ router.get("/", async (req, res) => {
     res.json([...users, ...mappedProviders]);
 });
 
+// router.put("/:id", async (req, res) => {
+//     try {
+//         const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+//         res.json({ message: "User Updated", user });
+//     }
+//     catch (error) {
+//         res.json({ message: "User Update Failed", user });
+//     }
+// });
+
 router.put("/:id", async (req, res) => {
     try {
-        const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const user = await User.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        );
+
         res.json({ message: "User Updated", user });
-    }
-    catch (error) {
-        res.json({ message: "User Update Failed", user });
+
+    } catch (error) {
+        res.status(500).json({
+            message: "User Update Failed",
+            error: error.message
+        });
     }
 });
 
@@ -113,7 +131,7 @@ router.delete("/:id", async (req, res) => {
 router.get("/users", async (req, res) => {
     const users = await User.find();
     const providers = await Provider.find();
-    
+
     const mappedProviders = providers.map(p => {
         const obj = p.toObject();
         obj.role = "provider";
@@ -125,8 +143,79 @@ router.get("/users", async (req, res) => {
 });
 
 router.get("/:id", async (req, res) => {
-    const users = await User.find();
-    res.json(users);
+    try {
+        let user;
+        if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+            user = await User.findById(req.params.id);
+        }
+        if (!user) {
+            user = await User.findOne({ uid: req.params.id });
+        }
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching user", error: error.message });
+    }
+});
+
+router.get("/favorites/:userId", async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const user = await User.findOne({ uid: userId });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.json({
+            message: "User favorites fetched successfully",
+            favorites: user.favorites || []
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to fetch favorites",
+            error: error.message
+        });
+    }
+});
+
+router.post("/favorites", async (req, res) => {
+    try {
+        const { userId, favorites } = req.body;
+        // console.log("Backend favorites update hit:");
+        // console.log("userId (uid):", userId);
+        // console.log("favorites:", favorites);
+
+        if (!userId) {
+            return res.status(400).json({ message: "userId (uid) is required" });
+        }
+
+        const user = await User.findOneAndUpdate(
+            { uid: userId },
+            { favorites },
+            { new: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.json({
+            message: "User Updated",
+            user
+        });
+
+    } catch (error) {
+        console.error("Backend error updating favorites:", error);
+        res.status(500).json({
+            message: "User Update Failed",
+            error: error.message
+        });
+    }
 });
 
 module.exports = router;

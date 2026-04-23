@@ -77,10 +77,13 @@ export const bookingsAPI = {
 };
 
 export const usersAPI = {
-  getProfile: () => api.get('/users/profile'),
-  updateProfile: (data) => api.put('/users/profile', data),
-  getFavorites: () => api.get('/users/favorites'),
-  toggleFavorite: (serviceId) => api.post(`/users/favorites/${serviceId}`),
+  getProfile: () => api.get('/userroutes/profile'),
+  updateProfile: (data) => api.put('/userroutes/profile', data),
+  getFavorites: (userId) => api.get(`/userroutes/favorites/${userId}`),
+  toggleFavorite: (serviceId) => api.post(`/userroutes/favorites/${serviceId}`),
+  updateFav: (userId, favorites) => api.post(`/userroutes/favorites`, { userId, favorites }),
+  getUser: (uid) => api.get(`/users/${uid}`),
+  updateUser: (id, data) => api.put(`/users/${id}`, data),
 };
 
 export const providerAPI = {
@@ -88,6 +91,8 @@ export const providerAPI = {
   getDashboard: () => api.get('/provider/dashboard'),
   toggleAvailability: () => api.patch('/provider/availability'),
   getBookings: () => api.get('/provider/bookings'),
+  getProvider: (providerId) => api.get(`/providers/${providerId}`),
+  updateProvider: (providerId, data) => api.put(`/providers/${providerId}`, data),
 };
 
 export const adminAPI = {

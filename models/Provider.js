@@ -13,6 +13,7 @@ const providerSchema = new mongoose.Schema({
   name: String,
   email: String,
   password: String,
+  phone: String,
 
   business: String,
 

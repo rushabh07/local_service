@@ -4,29 +4,71 @@ import { Star, MapPin, Clock, Heart, Zap, BadgeCheck } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { formatCurrency } from '../../utils';
 import toast from 'react-hot-toast';
+import { usersAPI } from '../../services/api';
 
 export default function ServiceCard({ service, provider }) {
   const { user, updateUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [imgError, setImgError] = useState(false);
-  const isFavorited = user?.favorites?.includes(service.id);
+  const isFavorited = (user?.favorites || []).map(Number).includes(Number(service.id));
   // console.log(provider);
 
-  const handleFavorite = (e) => {
+  // const handleFavorite = (e) => {
+  //   e.preventDefault();
+  //   if (!isAuthenticated) {
+  //     toast.error('Please login to save favorites.');
+  //     navigate('/login');
+  //     return;
+  //   }
+  //   const favs = user.favorites || [];
+  //   const updated = isFavorited
+  //     ? favs.filter(id => id !== service.id)
+  //     : [...favs, service.id];
+  //   console.log(updated)
+  //   usersAPI.updateFav(user?.uid, updated);
+  //   updateUser({ favorites: updated });
+  //   toast.success(isFavorited ? 'Removed from favorites' : 'Added to favorites! ❤️');
+  // };
+
+
+
+  const handleFavorite = async (e) => {
     e.preventDefault();
+
     if (!isAuthenticated) {
       toast.error('Please login to save favorites.');
       navigate('/login');
       return;
     }
-    const favs = user.favorites || [];
-    const updated = isFavorited
-      ? favs.filter(id => id !== service.id)
-      : [...favs, service.id];
-    updateUser({ favorites: updated });
-    toast.success(isFavorited ? 'Removed from favorites' : 'Added to favorites! ❤️');
-  };
 
+    // // DEBUG LOGS
+    // console.log("ServiceCard: user object:", user);
+    // console.log("ServiceCard: user.uid:", user?.uid);
+
+    const favs = user.favorites || [];
+
+    const updated = isFavorited
+      ? favs.map(Number).filter(id => id !== Number(service.id))
+      : [...favs.map(Number), Number(service.id)];
+
+    // console.log("ServiceCard: updated favorites:", updated);
+
+    try {
+      const res = await usersAPI.updateFav(user?.uid, updated);
+
+      updateUser({ favorites: res.data.user.favorites });
+
+      toast.success(
+        isFavorited
+          ? 'Removed from favorites'
+          : 'Added to favorites! ❤️'
+      );
+
+    } catch (error) {
+      console.error("ServiceCard: error updating favorites:", error);
+      toast.error("Failed to update favorites");
+    }
+  };
   return (
     <div className="group bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 flex flex-col border border-slate-100 dark:border-slate-700">
 

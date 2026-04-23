@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   LayoutDashboard, Calendar, BarChart2, Settings, LogOut,
-  ToggleLeft, Server, Star
+  ToggleLeft, Server, Star, User
 } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
@@ -14,6 +14,7 @@ import OverviewTab from '../../components/provider/OverviewTab';
 import ServicesTab from '../../components/provider/ServicesTab';
 import BookingsTab from '../../components/provider/BookingsTab';
 import ReviewsTab from '../../components/provider/ReviewsTab';
+import EditProfile from '../../components/common/EditProfile';
 
 import { providerEarningsData } from '../../data/mockData';
 
@@ -22,6 +23,7 @@ const NAV_ITEMS = [
   { id: 'services', label: 'My Services', icon: Server },
   { id: 'bookings', label: 'Bookings', icon: Calendar },
   { id: 'reviews', label: 'Reviews', icon: Star },
+  { id: 'profile', label: 'Profile', icon: User },
 ];
 
 export default function ProviderDashboard() {
@@ -219,6 +221,8 @@ export default function ProviderDashboard() {
         return <BookingsTab bookings={bookings} onUpdateStatus={updateBookingStatus} />;
       case 'reviews':
         return <ReviewsTab reviews={reviews} />;
+      case 'profile':
+        return <EditProfile />;
       default:
         return <OverviewTab statCards={statCards} user={user} myBookings={bookings} allServices={services} providerEarningsData={providerEarningsData} isAvailable={isAvailable} provider={providerStats} />;
     }

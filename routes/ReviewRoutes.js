@@ -1,6 +1,30 @@
 const express = require("express");
 const router = express.Router();
 const Review = require("../models/Review");
+const Service = require("../models/Service");
+
+const updateServiceRating = async (serviceId) => {
+    try {
+        const reviews = await Review.find({ serviceId, approved: true });
+        const reviewCount = reviews.length;
+        let avgRating = 0;
+        
+        if (reviewCount > 0) {
+            const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+            avgRating = Number((totalRating / reviewCount).toFixed(2));
+        }
+
+        await Service.updateOne(
+            { id: serviceId },
+            {
+                rating: avgRating,
+                reviewCount: reviewCount
+            }
+        );
+    } catch (error) {
+        console.error("Error updating service rating:", error);
+    }
+};
 
 router.get("/", async (req, res) => {
     try {
@@ -58,8 +82,16 @@ router.get("/user/:userId", async (req, res) => {
 });
 
 router.put("/approve/:id", async (req, res) => {
-    await Review.findByIdAndUpdate(req.params.id, { approved: true });
-    res.send("Approved");
+    try {
+        const review = await Review.findByIdAndUpdate(req.params.id, { approved: true }, { new: true });
+        if (review) {
+            await updateServiceRating(review.serviceId);
+        }
+        res.send("Approved");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Server error");
+    }
 });
 
 
