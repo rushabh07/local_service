@@ -3,6 +3,8 @@ import { useAuth } from '../../context/AuthContext';
 import { usersAPI, providerAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 import { Save, User, Mail, Phone, MapPin, ToggleLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
 
 export default function EditProfile() {
   const { user, updateUser } = useAuth();
@@ -16,10 +18,12 @@ export default function EditProfile() {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchData();
   }, [user]);
+
 
   const fetchData = async () => {
     if (!user) return;
@@ -32,18 +36,19 @@ export default function EditProfile() {
           email: data.email || '',
           phone: data.phone || '',
           avatar: data.avatar || '',
-          address: data.address || '',
+          address: data?.address || data?.area || '',
         });
       } else if (user.role === 'provider') {
         const providerId = user.uid || user.providerId || user._id;
         const res = await providerAPI.getProvider(providerId);
         const data = res.data;
+        // console.log(data);
         setFormData({
           name: data.name || '',
           email: data.email || '',
           phone: data.phone || '',
           avatar: data.avatar || '',
-          address: data.address || '',
+          address: data?.address || data?.area || '',
           isAvailable: data.isAvailable !== undefined ? data.isAvailable : true,
         });
       }
@@ -56,11 +61,18 @@ export default function EditProfile() {
   };
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+    const { name, value, type, checked, files } = e.target;
+    if (name === 'avatar' && files && files[0]) {
+      setFormData((prev) => ({
+        ...prev,
+        avatar: files[0],
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value,
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -74,15 +86,37 @@ export default function EditProfile() {
 
     setSaving(true);
     try {
+      const submitData = new FormData();
+      Object.keys(formData).forEach((key) => {
+        // Only append avatar if it's an actual File (user selected a new one)
+        if (key === 'avatar') {
+          if (formData[key] instanceof File) {
+            submitData.append(key, formData[key]);
+          }
+          // Skip string avatar values — the backend keeps the existing one
+        } else {
+          submitData.append(key, formData[key]);
+        }
+      });
+
       if (user.role === 'customer') {
-        const res = await usersAPI.updateUser(user._id || user.id, formData);
+        const res = await usersAPI.updateUser(user?.uid, submitData);
         updateUser(res.data.user);
       } else if (user.role === 'provider') {
-        const providerId = user.uid || user.providerId;
-        const res = await providerAPI.updateProvider(providerId, formData);
+        const providerId = user?.uid || user.providerId;
+        const res = await providerAPI.updateProvider(providerId, submitData);
         updateUser(res.data.provider);
       }
       toast.success('Profile updated successfully');
+
+      // Redirect to respective dashboard after update
+      setTimeout(() => {
+        if (user.role === 'customer') {
+          navigate('/user/dashboard');
+        } else if (user.role === 'provider') {
+          navigate('/provider/dashboard');
+        }
+      }, 1500);
     } catch (err) {
       toast.error('Failed to update profile');
       console.error(err);
@@ -173,15 +207,14 @@ export default function EditProfile() {
           {/* Avatar Field */}
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-              Avatar URL
+              Profile Avatar
             </label>
             <input
-              type="text"
+              type="file"
               name="avatar"
-              value={formData.avatar}
+              accept="image/*"
               onChange={handleChange}
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50"
-              placeholder="https://example.com/avatar.jpg"
+              className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-white file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
           </div>
 

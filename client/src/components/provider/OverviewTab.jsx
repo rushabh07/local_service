@@ -1,8 +1,9 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { Star } from 'lucide-react';
+import { Star, Server, Calendar, User, ChevronRight } from 'lucide-react';
 import Badge from '../common/Badge';
 import { formatCurrency, formatDate } from '../../utils';
+import { Link } from 'react-router-dom';
 
 export default function OverviewTab({
   user,
@@ -12,6 +13,7 @@ export default function OverviewTab({
   providerEarningsData,
   myBookings,
   allServices,
+  onTabChange,
 }) {
   return (
     <div className="animate-fade-in space-y-6">
@@ -31,13 +33,64 @@ export default function OverviewTab({
           return (
             <div key={idx} className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-card">
               <div className={`inline-flex p-2 rounded-xl mb-3 ${s.bg}`}>
-                <Icon className={`w-5 h-5 ${s.color}`} />
+                {Icon ? <Icon className={`w-5 h-5 ${s.color}`} /> : <div className="w-5 h-5" />}
               </div>
               <div className="text-2xl font-heading font-bold text-slate-800 dark:text-white mb-1">{s.value}</div>
               <div className="text-xs text-slate-500 dark:text-slate-400">{s.label}</div>
             </div>
           );
         })}
+      </div>
+
+      {/* Quick Navigation */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <button 
+          onClick={() => onTabChange('services')}
+          className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-card hover:border-primary/50 transition-colors group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Server className="w-5 h-5 text-primary" />
+            </div>
+            <div className="text-left">
+              <p className="font-bold text-slate-800 dark:text-white text-sm">Manage Services</p>
+              <p className="text-xs text-slate-500">Update your offerings</p>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-primary transition-colors" />
+        </button>
+
+        <button 
+          onClick={() => onTabChange('bookings')}
+          className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-card hover:border-primary/50 transition-colors group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
+              <Calendar className="w-5 h-5 text-secondary" />
+            </div>
+            <div className="text-left">
+              <p className="font-bold text-slate-800 dark:text-white text-sm">View Bookings</p>
+              <p className="text-xs text-slate-500">Check your schedule</p>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-primary transition-colors" />
+        </button>
+
+        <button 
+          onClick={() => onTabChange('profile')}
+          className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-card hover:border-primary/50 transition-colors group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
+              <User className="w-5 h-5 text-success" />
+            </div>
+            <div className="text-left">
+              <p className="font-bold text-slate-800 dark:text-white text-sm">Edit Profile</p>
+              <p className="text-xs text-slate-500">Update your details</p>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-primary transition-colors" />
+        </button>
       </div>
 
       {/* Provider Rating */}
@@ -107,30 +160,19 @@ export default function OverviewTab({
 
         <div className="divide-y divide-slate-50 dark:divide-slate-700">
 
-          {myBookings
-            .filter(b => b.status === "Pending" || b.status === "Confirmed")
+          {myBookings?.filter(b => b.status === "Pending" || b.status === "Confirmed")
             .slice(0, 5)
             .map(b => {
 
               const svc = allServices?.find(
-                s => s.id == b.serviceId
+                s => String(s.id) === String(b.serviceId) || String(s._id) === String(b.serviceId)
               );
 
-              // const serviceTitle = services.map(s => b.serviceId === s.id ? s.title : "Unknown Service");
-              const service =
-                allServices?.find(
-                  s => s.id == b.serviceId
-                );
-
-              // console.log(serviceTitle);
-              // // console.log(services.map(s => s.id));
               return (
-
                 <div
                   key={b._id || b.id}
                   className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
                 >
-
                   {/* Icon */}
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-xl shrink-0">
                     {svc?.category?.toLowerCase()?.includes("electric")
@@ -142,45 +184,33 @@ export default function OverviewTab({
 
                   {/* Service Info */}
                   <div className="flex-1 min-w-0">
-
                     <p className="font-semibold text-slate-800 dark:text-white text-sm truncate">
-                      {service?.title}
+                      {svc?.title || 'Unknown Service'}
                     </p>
-
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       {formatDate(b.date)} at {b.time}
                     </p>
-
                   </div>
 
                   {/* Price + Status */}
                   <div className="flex items-center gap-3 shrink-0">
-
                     <span className="font-bold text-slate-800 dark:text-white text-sm">
                       {formatCurrency(b.amount || svc?.price || 0)}
                     </span>
-
                     <Badge status={b.status} />
-
                   </div>
-
                 </div>
-
               );
-
             })}
 
           {/* Empty State */}
-          {myBookings.filter(b => b.status === "Pending" || b.status === "Confirmed").length === 0 && (
-
+          {(!myBookings || myBookings.filter(b => b.status === "Pending" || b.status === "Confirmed").length === 0) && (
             <div className="py-10 text-center text-slate-500">
               No upcoming bookings
             </div>
-
           )}
 
         </div>
-
       </div>
     </div>
   );

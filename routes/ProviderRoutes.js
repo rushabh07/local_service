@@ -1,10 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const Provider = require("../models/Provider");
+const upload = require("../middleware/upload");
 
 // Add provider
-router.post("/add", async (req, res) => {
-    const provider = new Provider(req.body);
+router.post("/add", upload.single("avatar"), async (req, res) => {
+    const avatarPath = req.file ? `/uploads/avatars/${req.file.filename}` : req.body.avatar;
+    const provider = new Provider({ ...req.body, avatar: avatarPath });
     await provider.save();
     res.send("Provider added");
 });
@@ -56,14 +58,18 @@ router.get("/:providerId", async (req, res) => {
 
 
 
-router.put("/:providerId", async (req, res) => {
+router.put("/:providerId", upload.single("avatar"), async (req, res) => {
     try {
+        const updateData = { ...req.body };
+        if (req.file) {
+            updateData.avatar = `/uploads/avatars/${req.file.filename}`;
+        }
 
         // Convert address -> area if address is sent
         // console.log(req.body);
-        if (req.body.address) {
-            req.body.area = req.body.address;
-            delete req.body.address;
+        if (updateData.address) {
+            updateData.area = updateData.address;
+            delete updateData.address;
         }
 
         let provider;
@@ -71,7 +77,7 @@ router.put("/:providerId", async (req, res) => {
         if (req.params.providerId.match(/^[0-9a-fA-F]{24}$/)) {
             provider = await Provider.findByIdAndUpdate(
                 req.params.providerId,
-                req.body,
+                updateData,
                 { new: true }
             );
         }
@@ -79,7 +85,7 @@ router.put("/:providerId", async (req, res) => {
         if (!provider) {
             provider = await Provider.findOneAndUpdate(
                 { providerId: req.params.providerId },
-                req.body,
+                updateData,
                 { new: true }
             );
         }

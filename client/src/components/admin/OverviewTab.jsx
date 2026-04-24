@@ -1,6 +1,7 @@
 import React from 'react';
 import {
-  Users, UserCheck, FileText, TrendingUp, Activity, AlertTriangle, Download
+  Users, UserCheck, FileText, TrendingUp, Activity, AlertTriangle, Download,
+  Server, Database, CheckCircle, ChevronRight
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -15,7 +16,8 @@ export default function OverviewTab({
   stats,
   revenueChartData,
   categoryChartData,
-  recentActivityLog
+  recentActivityLog,
+  onTabChange
 }) {
   const [chartPeriod, setChartPeriod] = React.useState('monthly');
 
@@ -54,6 +56,73 @@ export default function OverviewTab({
             </div>
           );
         })}
+      </div>
+
+      {/* Quick Navigation */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <button 
+          onClick={() => onTabChange('users')}
+          className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:border-primary/50 transition-colors group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Users className="w-5 h-5 text-primary" />
+            </div>
+            <div className="text-left">
+              <p className="font-bold text-slate-800 dark:text-white text-sm">Manage Users</p>
+              <p className="text-[10px] text-slate-500">View & edit accounts</p>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-primary transition-colors" />
+        </button>
+
+        <button 
+          onClick={() => onTabChange('providers')}
+          className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:border-primary/50 transition-colors group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
+              <UserCheck className="w-5 h-5 text-secondary" />
+            </div>
+            <div className="text-left">
+              <p className="font-bold text-slate-800 dark:text-white text-sm">Manage Providers</p>
+              <p className="text-[10px] text-slate-500">Review & verify</p>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-primary transition-colors" />
+        </button>
+
+        <button 
+          onClick={() => onTabChange('services')}
+          className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:border-primary/50 transition-colors group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
+              <Server className="w-5 h-5 text-success" />
+            </div>
+            <div className="text-left">
+              <p className="font-bold text-slate-800 dark:text-white text-sm">Manage Services</p>
+              <p className="text-[10px] text-slate-500">Service categories & pricing</p>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-primary transition-colors" />
+        </button>
+
+        <button 
+          onClick={() => onTabChange('reviews')}
+          className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:border-primary/50 transition-colors group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-100/50 dark:bg-amber-900/20 flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-amber-500" />
+            </div>
+            <div className="text-left">
+              <p className="font-bold text-slate-800 dark:text-white text-sm">Review Approvals</p>
+              <p className="text-[10px] text-slate-500">Approve user feedback</p>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-primary transition-colors" />
+        </button>
       </div>
 
       {/* Charts Row */}

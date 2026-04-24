@@ -98,20 +98,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── STATS BAR ── */}
-      <section className="bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700">
-        <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-0 md:divide-x divide-slate-100 dark:divide-slate-700">
-          {statItems.map((stat) => (
-            <div key={stat.label} className="text-center px-6">
-              <div className={`text-3xl md:text-4xl font-heading font-bold ${stat.color} mb-1`}>
-                <AnimatedCounter value={stat.value} suffix={stat.suffix} />
-              </div>
-              <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* ── SERVICE CATEGORIES ── */}
       <section className="py-20 px-6 max-w-7xl mx-auto">
         <div className="text-center mb-12">
@@ -245,9 +231,6 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/services" className="px-8 py-3.5 bg-white text-primary font-bold rounded-2xl hover:bg-slate-100 transition-colors hover:shadow-lg">
               Explore Services
-            </Link>
-            <Link to="/register" className="px-8 py-3.5 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-bold rounded-2xl hover:bg-white/20 transition-colors">
-              Join as Provider
             </Link>
           </div>
         </div>

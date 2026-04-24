@@ -46,7 +46,7 @@ export default function ServicesTab({ services, onDelete }) {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       {s.image ? (
-                        <img src={s.image} alt={s.title} className="w-10 h-10 rounded-lg object-cover bg-slate-100" />
+                        <img src={s.image.startsWith('http') ? s.image : `http://localhost:3000${s.image}`} alt={s.title} className="w-10 h-10 rounded-lg object-cover bg-slate-100" />
                       ) : (
                         <div className="w-10 h-10 rounded-lg bg-slate-200 dark:bg-slate-600 flex items-center justify-center">?</div>
                       )}

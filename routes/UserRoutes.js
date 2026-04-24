@@ -2,10 +2,14 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/user");
 const Provider = require("../models/Provider");
-const jwt = require("jsonwebtoken");// Register
-router.post("/register", async (req, res) => {
+const jwt = require("jsonwebtoken");
+const upload = require("../middleware/upload");
+
+// Register
+router.post("/register", upload.single("avatar"), async (req, res) => {
     try {
         const { role, email } = req.body;
+        const avatarPath = req.file ? `/uploads/avatars/${req.file.filename}` : req.body.avatar;
 
         const existingUser = await User.findOne({ email });
         const existingProvider = await Provider.findOne({ email });
@@ -15,7 +19,7 @@ router.post("/register", async (req, res) => {
         }
 
         if (role === "provider") {
-            const providerData = { ...req.body };
+            const providerData = { ...req.body, avatar: avatarPath };
             if (providerData.uid) {
                 providerData.providerId = providerData.uid;
             }
@@ -24,7 +28,8 @@ router.post("/register", async (req, res) => {
             console.log("REGISTER HIT - PROVIDER");
             return res.json({ message: "Provider Registered", reg: true });
         } else {
-            const user = new User(req.body);
+            const userData = { ...req.body, avatar: avatarPath };
+            const user = new User(userData);
             await user.save();
             console.log("REGISTER HIT");
             return res.json({ message: "User Registered", reg: true });
@@ -100,11 +105,19 @@ router.get("/", async (req, res) => {
 //     }
 // });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", upload.single("avatar"), async (req, res) => {
+    console.log("Update User Route HIT");
+    // console.log(req.body);
+    // console.log(req.file);
     try {
-        const user = await User.findByIdAndUpdate(
-            req.params.id,
-            req.body,
+        const updateData = { ...req.body };
+        if (req.file) {
+            updateData.avatar = `/uploads/avatars/${req.file.filename}`;
+        }
+
+        const user = await User.findOneAndUpdate(
+            { uid: req.params.id },
+            updateData,
             { new: true }
         );
 

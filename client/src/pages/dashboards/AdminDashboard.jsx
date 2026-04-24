@@ -157,7 +157,7 @@ export default function AdminDashboard() {
 
     switch (activeTab) {
       case 'overview':
-        return <OverviewTab stats={stats} revenueChartData={revenueChartData} categoryChartData={categoryChartData} recentActivityLog={recentActivityLog} />;
+        return <OverviewTab stats={stats} revenueChartData={revenueChartData} categoryChartData={categoryChartData} recentActivityLog={recentActivityLog} onTabChange={handleTabChange} />;
       case 'services':
         return <ServicesTab services={services} onDelete={deleteItem} />;
       case 'providers':
@@ -171,7 +171,7 @@ export default function AdminDashboard() {
       case 'categories':
         return <CategoriesTab categories={categories} onDelete={deleteItem} />;
       default:
-        return <OverviewTab stats={stats} />;
+        return <OverviewTab stats={stats} onTabChange={handleTabChange} />;
     }
   };
 

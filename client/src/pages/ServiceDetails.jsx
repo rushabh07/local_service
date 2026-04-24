@@ -19,11 +19,47 @@ export default function ServiceDetails() {
   const navigate = useNavigate();
   const { isAuthenticated, user, updateUser } = useAuth();
   const [reviews, setReviews] = useState([]);
-
   const service = location.state?.service;
   const provider = location.state?.provider;
+  const isRestricted = user?.role === "provider" || user?.role === "admin";
   const isFavorited = (user?.favorites || []).map(Number).includes(Number(service?.id));
+  // const [userName, setUserName] = useState({});
+  // const [userAvatars, setUserAvatars] = useState({});
 
+  const [usersMap, setUsersMap] = useState({});
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const uniqueUserIds = [...new Set(reviews.map(r => r.userId))];
+
+        const map = {};
+
+        await Promise.all(
+          uniqueUserIds.map(async (id) => {
+            try {
+              const res = await usersAPI.getUser(id);
+              map[id] = {
+                name: res.data.name,
+                avatar: res.data.avatar?.startsWith('http') ? res.data.avatar : (res.data.avatar ? `http://localhost:3000${res.data.avatar}` : "/default-avatar.png"),
+              };
+            } catch {
+              map[id] = {
+                name: "Unknown User",
+                avatar: "/default-avatar.png",
+              };
+            }
+          })
+        );
+
+        setUsersMap(map);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    if (reviews.length) fetchUsers();
+  }, [reviews]);
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -120,7 +156,7 @@ export default function ServiceDetails() {
             {/* Hero Image */}
             <div className="relative rounded-3xl overflow-hidden h-64 sm:h-80 bg-slate-100 dark:bg-slate-800">
               {service.image ? (
-                <img src={service.image} alt={service.title} className="w-full h-full object-cover" />
+                <img src={service.image.startsWith('http') ? service.image : `http://localhost:3000${service.image}`} alt={service.title} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-7xl">🏠</div>
               )}
@@ -232,10 +268,10 @@ export default function ServiceDetails() {
                     ) : (
                       reviews.map(r => (
                         <div key={r.id} className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
-                          <img src={r.avatar} alt={r.userName} className="w-10 h-10 rounded-full shrink-0 object-cover" />
+                          <img src={usersMap[r.userId]?.avatar?.startsWith('http') ? usersMap[r.userId].avatar : (usersMap[r.userId]?.avatar ? `http://localhost:3000${usersMap[r.userId].avatar}` : "/default-avatar.png")} alt={usersMap[r.userId]?.name} className="w-10 h-10 rounded-full shrink-0 object-cover" />
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="font-bold text-sm text-slate-800 dark:text-white">{r.userName}</span>
+                              <span className="font-bold text-sm text-slate-800 dark:text-white">{usersMap[r.userId]?.name}</span>
                               <span className="text-xs text-slate-400">{formatDate(r.date)}</span>
                             </div>
                             <div className="flex mb-2">
@@ -267,9 +303,34 @@ export default function ServiceDetails() {
                 <p className="text-xs text-slate-500">Inclusive of all charges</p>
               </div>
 
-              <Button onClick={handleBook} fullWidth size="lg" className="mb-3">
-                Book Now
-              </Button>
+              {
+
+                isRestricted ? (
+                  <Link to="/services" className="block w-full">
+                    <Button variant="outline" fullWidth size="lg" className="mb-3">
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      Back to Services
+                    </Button>
+                  </Link>
+                ) : (
+                  <>
+                    <Button onClick={handleBook} fullWidth size="lg" className="mb-3">
+                      Book Now
+                    </Button>
+                    <Link to="/services" className="block w-full">
+                      <Button variant="outline" fullWidth size="lg" className="mb-3">
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Back to Services
+                      </Button>
+                    </Link>
+                  </>
+                )}
+              {/* <Link to="/services" className="block w-full">
+                <Button variant="outline" fullWidth size="lg" className="mb-3">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Services
+                </Button>
+              </Link> */}
               <p className="text-xs text-center text-slate-500 mb-4">No advance payment required</p>
 
               <div className="space-y-2 pt-4 border-t border-slate-100 dark:border-slate-700">
@@ -295,7 +356,7 @@ export default function ServiceDetails() {
                 <div className="flex items-center gap-3 mb-4">
                   <div className="relative">
                     <img
-                      src={provider.avatar}
+                      src={provider.avatar.startsWith('http') ? provider.avatar : `http://localhost:3000${provider.avatar}`}
                       alt={provider.name}
                       className="w-14 h-14 rounded-2xl object-cover ring-2 ring-primary/20"
                     />

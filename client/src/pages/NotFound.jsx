@@ -12,9 +12,10 @@ export default function NotFound() {
       <p className="text-slate-500 dark:text-slate-400 max-w-md mb-8">
         Oops! The page you're looking for doesn't exist. It might have been moved or deleted.
       </p>
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-3">
         <Button variant="outline" onClick={() => navigate(-1)}>← Go Back</Button>
-        <Link to="/"><Button>Go Home</Button></Link>
+        <Link to="/"><Button variant="outline">Go Home</Button></Link>
+        <Link to="/services"><Button>Browse Services</Button></Link>
       </div>
     </div>
   );

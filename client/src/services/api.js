@@ -6,7 +6,6 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
-  headers: { 'Content-Type': 'application/json' },
 });
 
 // Request interceptor — attach JWT
@@ -82,8 +81,10 @@ export const usersAPI = {
   getFavorites: (userId) => api.get(`/userroutes/favorites/${userId}`),
   toggleFavorite: (serviceId) => api.post(`/userroutes/favorites/${serviceId}`),
   updateFav: (userId, favorites) => api.post(`/userroutes/favorites`, { userId, favorites }),
-  getUser: (uid) => api.get(`/users/${uid}`),
-  updateUser: (id, data) => api.put(`/users/${id}`, data),
+  getUser: (uid) => api.get(`/userroutes/${uid}`),
+  updateUser: (uid, data) => {
+    return api.put(`/userroutes/${uid}`, data)
+  },
 };
 
 export const providerAPI = {

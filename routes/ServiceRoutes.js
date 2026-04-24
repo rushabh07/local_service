@@ -1,12 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const Service = require("../models/Service");
+const upload = require("../middleware/upload");
 
 // Add service (admin)
-router.post("/add", async (req, res) => {
-    console.log(req.body.providerId);
-    const service = new Service(req.body);
-    console.log(service);
+router.post("/add", upload.single("image"), async (req, res) => {
+    const imagePath = req.file ? `/uploads/services/${req.file.filename}` : req.body.image;
+    const service = new Service({ ...req.body, image: imagePath });
     await service.save();
     res.send("Service added");
 });
@@ -19,12 +19,16 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
     const service = await Service.findById(req.params.id);
-    console.log(service);
+    // console.log(service);
     res.json(service);
 });
 
-router.put("/:id", async (req, res) => {
-    const service = await Service.findByIdAndUpdate(req.params.id, req.body);
+router.put("/:id", upload.single("image"), async (req, res) => {
+    const updateData = { ...req.body };
+    if (req.file) {
+        updateData.image = `/uploads/services/${req.file.filename}`;
+    }
+    const service = await Service.findByIdAndUpdate(req.params.id, updateData, { new: true });
     res.json(service);
 });
 

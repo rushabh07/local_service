@@ -15,7 +15,7 @@ const ROLES = [
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirm: '', role: 'customer' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirm: '', role: 'customer', avatar: null });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(1);
@@ -78,7 +78,12 @@ export default function Register() {
   };
 
   const handleChange = (field) => (e) => {
-    setForm(f => ({ ...f, [field]: e.target.value }));
+    const { value, files } = e.target;
+    if (field === 'avatar' && files && files[0]) {
+      setForm(f => ({ ...f, avatar: files[0] }));
+    } else {
+      setForm(f => ({ ...f, [field]: value }));
+    }
     if (errors[field]) setErrors(err => ({ ...err, [field]: '' }));
   };
 
@@ -103,15 +108,18 @@ export default function Register() {
         uid
       };
 
-      const user = await register(userData);
-      // console.log(user);
+      // Since we are doing a real backend call with FormData, 
+      // we'll prepare the FormData here.
+      const formData = new FormData();
+      Object.keys(userData).forEach(key => {
+        if (userData[key] !== null) {
+          formData.append(key, userData[key]);
+        }
+      });
 
       const res = await fetch("http://localhost:3000/api/userroutes/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(user)
+        body: formData
       });
 
       const data = await res.json();
@@ -121,14 +129,17 @@ export default function Register() {
         return;
       }
 
-      toast.success(`Account created! Welcome, ${form.name.split(" ")[0]}! 🎉`);
-
-      const dashMap = {
-        customer: "/user/dashboard",
-        provider: "/provider/dashboard"
-      };
-
-      navigate(dashMap[form.role] || "/", { replace: true });
+      // Automatically log in after registration
+      // We need to fetch the user again or get it from the registration response if it returned the user/token
+      // For now, let's just use the current mock login approach or navigate to login
+      
+      // Since our register context function also sets the user, we should probably call it 
+      // with the response data if it contains the user/token.
+      // But the backend /register only returns { message, reg: true }.
+      // So we should probably navigate to login or update register context to be better.
+      
+      toast.success(`Account created! Please log in to continue. 🎉`);
+      navigate("/login");
 
     } catch (error) {
 
@@ -205,6 +216,18 @@ export default function Register() {
                 <Input id="reg-phone" label="Mobile Number (optional)" type="tel" placeholder="9876543210"
                   value={form.phone} onChange={handleChange('phone')} error={errors.phone}
                   leftIcon={<Phone className="w-4 h-4" />} hint="Used for booking reminders" />
+
+                <div className="flex flex-col">
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                    Profile Avatar (optional)
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleChange('avatar')}
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-white file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  />
+                </div>
 
 
                 <Input id="reg-password" label="Create Password" type="password" placeholder="Min. 8 characters"

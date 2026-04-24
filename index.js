@@ -1,9 +1,13 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-app.use(cors());
+const path = require("path");
 
+app.use(cors());
 app.use(express.json());
+
+// Serve static files from uploads folder
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const connectDB = require("./config/db");
 connectDB();
@@ -16,8 +20,6 @@ app.use("/api/providers", providerRoutes);
 
 const serviceRoutes = require("./routes/ServiceRoutes");
 app.use("/api/services", serviceRoutes);
-
-app.use(express.json());
 
 // IMPORT ROUTES
 const userRoutes = require("./routes/UserRoutes");

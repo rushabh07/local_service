@@ -34,7 +34,7 @@ export default function ProvidersTab({ providers, onDelete }) {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       {p.avatar ? (
-                         <img src={p.avatar} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />
+                         <img src={p.avatar.startsWith('http') ? p.avatar : `http://localhost:3000${p.avatar}`} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />
                       ) : (
                          <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
                            {p.name?.charAt(0) || 'P'}

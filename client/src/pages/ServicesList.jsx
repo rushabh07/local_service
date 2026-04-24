@@ -310,9 +310,14 @@ export default function ServicesList() {
             <div className="text-6xl mb-4">🔍</div>
             <h3 className="text-xl font-heading font-bold text-slate-700 dark:text-white mb-2">No Services Found</h3>
             <p className="text-slate-500 dark:text-slate-400 mb-6">Try adjusting your search or filters.</p>
-            <button onClick={resetFilters} className="px-6 py-2.5 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-indigo-700 transition-colors">
-              Reset Filters
-            </button>
+            <div className="flex gap-3 justify-center">
+              <button onClick={resetFilters} className="px-6 py-2.5 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-indigo-700 transition-colors">
+                Reset Filters
+              </button>
+              <button onClick={() => navigate('/')} className="px-6 py-2.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl font-semibold text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                Go to Home
+              </button>
+            </div>
           </div>
         )}
       </div>

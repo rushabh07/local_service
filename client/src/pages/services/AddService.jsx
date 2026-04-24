@@ -20,7 +20,12 @@ export default function AddService() {
     description: ""
   });
   const handleChange = (e) => {
-    setService({ ...service, [e.target.name]: e.target.value });
+    const { name, value, files } = e.target;
+    if (name === "image" && files && files[0]) {
+      setService({ ...service, image: files[0] });
+    } else {
+      setService({ ...service, [name]: value });
+    }
   };
 
   const generateServiceId = async () => {
@@ -73,20 +78,26 @@ export default function AddService() {
     setLoading(true);
 
     try {
-
       const id = await generateServiceId();
 
-      const serviceData = {
-        ...service,
-        id,
-        price: Number(service.price),
-        priceType: service.priceType === 'start' ? 'starting' : service.priceType,
-        includes: service.includes ? service.includes.split(',').map(item => item.trim()) : [],
-        providerId: user?.uid
-      };
+      const formData = new FormData();
+      formData.append("id", id);
+      formData.append("title", service.title);
+      formData.append("category", service.category);
+      formData.append("price", Number(service.price));
+      formData.append("priceType", service.priceType === 'start' ? 'starting' : service.priceType);
+      formData.append("duration", service.duration);
+      formData.append("description", service.description);
+      formData.append("providerId", user?.uid || "");
+      
+      const includesArray = service.includes ? service.includes.split(',').map(item => item.trim()) : [];
+      includesArray.forEach(item => formData.append("includes[]", item));
+      
+      if (service.image) {
+        formData.append("image", service.image);
+      }
 
-      console.log(serviceData);
-      await api.post("http://localhost:3000/api/services/add", serviceData);
+      await api.post("/services/add", formData);
 
       toast.success("Service added successfully!");
 
@@ -98,6 +109,7 @@ export default function AddService() {
 
     } catch (error) {
       toast.error("Failed to add service. Please try again.");
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -186,12 +198,13 @@ export default function AddService() {
             </div>
 
             <div className="flex flex-col md:col-span-2">
-              <label className="font-semibold text-slate-700 dark:text-slate-300 mb-1.5 text-sm">Image URL</label>
+              <label className="font-semibold text-slate-700 dark:text-slate-300 mb-1.5 text-sm">Service Image</label>
               <input
+                type="file"
                 name="image"
-                placeholder="Paste image link here"
+                accept="image/*"
                 onChange={handleChange}
-                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white"
+                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100"
               />
             </div>
 

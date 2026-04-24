@@ -38,7 +38,12 @@ export default function EditService() {
   };
 
   const handleChange = (e) => {
-    setService({ ...service, [e.target.name]: e.target.value });
+    const { name, value, files } = e.target;
+    if (name === "image" && files && files[0]) {
+      setService({ ...service, image: files[0] });
+    } else {
+      setService({ ...service, [name]: value });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -49,7 +54,24 @@ export default function EditService() {
     }
     setLoading(true);
     try {
-      await api.put(`/services/${serviceId}`, service);
+      const formData = new FormData();
+      Object.keys(service).forEach(key => {
+        if (key === 'includes' && Array.isArray(service[key])) {
+          service[key].forEach(item => formData.append("includes[]", item));
+        } else if (key === 'image') {
+          // Only send image if user selected a new file
+          if (service[key] instanceof File) {
+            formData.append(key, service[key]);
+          }
+          // Skip string image values — the backend keeps the existing one
+        } else if (key === '_id' || key === '__v') {
+          // Skip MongoDB internal fields
+        } else {
+          formData.append(key, service[key]);
+        }
+      });
+
+      await api.put(`/services/${serviceId}`, formData);
       toast.success("Service updated successfully!");
       navigate(user?.role === 'provider' ? "/provider/dashboard/services" : "/admin/dashboard/services");
     } catch (error) {
@@ -150,14 +172,17 @@ export default function EditService() {
             </div>
 
             <div className="flex flex-col md:col-span-2">
-              <label className="font-semibold text-slate-700 dark:text-slate-300 mb-1.5 text-sm">Image URL</label>
+              <label className="font-semibold text-slate-700 dark:text-slate-300 mb-1.5 text-sm">Service Image</label>
               <input
+                type="file"
                 name="image"
-                value={service.image || ""}
+                accept="image/*"
                 onChange={handleChange}
-                placeholder="Paste image link here"
-                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white"
+                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100"
               />
+              {typeof service.image === 'string' && service.image && (
+                <p className="mt-2 text-xs text-slate-500 italic">Current image: {service.image}</p>
+              )}
             </div>
 
             <div className="flex flex-col md:col-span-2">

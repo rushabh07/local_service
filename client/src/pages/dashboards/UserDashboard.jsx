@@ -176,13 +176,21 @@ export default function UserDashboard() {
   //   user?.favorites.includes(String(s.id))
   // );
   const location = useLocation();
+  const state = location.state || {};
 
   useEffect(() => {
-    if (location.state?.activeTab === 'favorites') {
+    if (state.activeTab === 'favorites') {
       setActiveTab('favorites');
       navigate(location.pathname, { replace: true, state: {} });
     }
-  }, [location.state, navigate]);
+  }, [state, navigate]);
+
+  useEffect(() => {
+    if (state.activeTab === 'profile') {
+      setActiveTab('profile');
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [state, navigate]);
 
 
   const favoriteServices = services.filter(s =>
@@ -335,7 +343,7 @@ export default function UserDashboard() {
           <div className="p-6 border-b border-slate-100 dark:border-slate-700">
             <div className="flex items-center gap-3">
               {user?.avatar
-                ? <img src={user.avatar} alt={user.name} className="w-12 h-12 rounded-2xl object-cover ring-2 ring-primary/20" />
+                ? <img src={user.avatar.startsWith('http') ? user.avatar : `http://localhost:3000${user.avatar}`} alt={user.name} className="w-12 h-12 rounded-2xl object-cover ring-2 ring-primary/20" />
                 : <div className="w-12 h-12 rounded-2xl bg-primary text-white font-bold flex items-center justify-center">{getInitials(user?.name)}</div>
               }
               <div className="min-w-0">
@@ -412,6 +420,57 @@ export default function UserDashboard() {
                     <div className={`text-3xl font-heading font-bold ${s.color}`}>{s.value}</div>
                   </div>
                 ))}
+              </div>
+
+              {/* Quick Navigation */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <button
+                  onClick={() => setActiveTab('bookings')}
+                  className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-card hover:border-primary/50 transition-colors group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <Calendar className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-bold text-slate-800 dark:text-white text-sm">View Bookings</p>
+                      <p className="text-xs text-slate-500">Track your requests</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-primary transition-colors" />
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('favorites')}
+                  className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-card hover:border-primary/50 transition-colors group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-danger/10 flex items-center justify-center">
+                      <Heart className="w-5 h-5 text-danger" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-bold text-slate-800 dark:text-white text-sm">View Favorites</p>
+                      <p className="text-xs text-slate-500">Quick access services</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-primary transition-colors" />
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('profile')}
+                  className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-card hover:border-primary/50 transition-colors group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
+                      <User className="w-5 h-5 text-success" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-bold text-slate-800 dark:text-white text-sm">Edit Profile</p>
+                      <p className="text-xs text-slate-500">Update your details</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-primary transition-colors" />
+                </button>
               </div>
 
               {/* Recent Bookings */}
@@ -660,7 +719,12 @@ export default function UserDashboard() {
           {/* ── FAVORITES ── */}
           {activeTab === 'favorites' && (
             <div className="animate-fade-in space-y-6">
-              <h1 className="text-2xl font-heading font-bold text-slate-800 dark:text-white">Saved Services</h1>
+              <div className="flex items-center justify-between">
+                <h1 className="text-2xl font-heading font-bold text-slate-800 dark:text-white">Saved Services</h1>
+                <Link to="/services" className="text-sm text-primary font-semibold hover:underline flex items-center gap-1">
+                  Browse More <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
               {favoriteServices.length === 0 ? (
                 <div className="text-center py-20">
                   <div className="text-6xl mb-3">❤️</div>
@@ -675,7 +739,7 @@ export default function UserDashboard() {
                     return (
                       <div key={s.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-card p-5 flex gap-4">
                         {s.image
-                          ? <img src={s.image} alt={s.title} className="w-16 h-16 rounded-xl object-cover shrink-0" />
+                          ? <img src={s.image.startsWith('http') ? s.image : `http://localhost:3000${s.image}`} alt={s.title} className="w-16 h-16 rounded-xl object-cover shrink-0" />
                           : <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center text-2xl shrink-0">🏠</div>
                         }
                         <div className="flex-1 min-w-0">

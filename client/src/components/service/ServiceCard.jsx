@@ -11,6 +11,8 @@ export default function ServiceCard({ service, provider }) {
   const navigate = useNavigate();
   const [imgError, setImgError] = useState(false);
   const isFavorited = (user?.favorites || []).map(Number).includes(Number(service.id));
+
+  const isRestricted = user?.role === "provider" || user?.role === "admin";
   // console.log(provider);
 
   // const handleFavorite = (e) => {
@@ -76,7 +78,7 @@ export default function ServiceCard({ service, provider }) {
       <div className="relative h-48 overflow-hidden bg-slate-100 dark:bg-slate-700">
         {!imgError && service.image ? (
           <img
-            src={service.image}
+            src={service.image.startsWith('http') ? service.image : `http://localhost:3000${service.image}`}
             alt={service.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             onError={() => setImgError(true)}
@@ -127,7 +129,7 @@ export default function ServiceCard({ service, provider }) {
         {provider && (
           <div className="flex items-center gap-2 mb-3">
             <img
-              src={provider?.avatar || "https://i.pravatar.cc/150?u=default"}
+              src={provider?.avatar && provider.avatar.startsWith('http') ? provider.avatar : (provider?.avatar ? `http://localhost:3000${provider.avatar}` : "https://i.pravatar.cc/150?u=default")}
               alt={provider?.name || "Provider"}
               onError={(e) => {
                 e.target.src = "https://i.pravatar.cc/150?u=default";
@@ -177,13 +179,41 @@ export default function ServiceCard({ service, provider }) {
               </span>
             </div>
           </div>
-          <Link
-            to={`/services/${service.id}`}
-            state={{ service, provider }}
-            className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all hover:shadow-glow active:scale-95"
-          >
-            Book Now
-          </Link>
+          <div className="flex gap-2">
+            {
+              isRestricted ? (
+                <Link
+                  to={`/services/${service.id}`}
+                  state={{ service, provider }}
+                  className="px-3 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-all active:scale-95 whitespace-nowrap"
+                >
+                  View Details
+                </Link>
+              ) : (
+                <Link
+                  to={`/services/${service.id}`}
+                  state={{ service, provider, autoBook: true }}
+                  className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all hover:shadow-glow active:scale-95"
+                >
+                  Book Now
+                </Link>
+              )
+            }
+            {/* <Link
+              to={`/services/${service.id}`}
+              state={{ service, provider }}
+              className="px-3 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-all active:scale-95 whitespace-nowrap"
+            >
+              View Details
+            </Link>
+            <Link
+              to={`/services/${service.id}`}
+              state={{ service, provider, autoBook: true }}
+              className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all hover:shadow-glow active:scale-95"
+            >
+              Book Now
+            </Link> */}
+          </div>
         </div>
       </div>
     </div>

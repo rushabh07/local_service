@@ -141,7 +141,7 @@ export default function Booking() {
               {/* Service Summary */}
               <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-700 rounded-2xl mb-6">
                 {service.image ? (
-                  <img src={service.image} alt={service.title} className="w-16 h-16 rounded-xl object-cover shrink-0" />
+                  <img src={service.image.startsWith('http') ? service.image : `http://localhost:3000${service.image}`} alt={service.title} className="w-16 h-16 rounded-xl object-cover shrink-0" />
                 ) : (
                   <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center text-2xl shrink-0">🏠</div>
                 )}

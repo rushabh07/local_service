@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
-  LayoutDashboard, Calendar, BarChart2, Settings, LogOut,
+  Home, Calendar, BarChart2, Settings, LogOut,
   ToggleLeft, Server, Star, User
 } from 'lucide-react';
 import api from '../../services/api';
@@ -19,7 +19,7 @@ import EditProfile from '../../components/common/EditProfile';
 import { providerEarningsData } from '../../data/mockData';
 
 const NAV_ITEMS = [
-  { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+  { id: 'overview', label: 'Overview', icon: Home },
   { id: 'services', label: 'My Services', icon: Server },
   { id: 'bookings', label: 'Bookings', icon: Calendar },
   { id: 'reviews', label: 'Reviews', icon: Star },
@@ -43,8 +43,18 @@ export default function ProviderDashboard() {
   const [services, setServices] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const location = useLocation();
+  const state = location.state || {};
 
   const [providerStats, setProviderStats] = useState({ rating: 4.8, experience: 5, area: 'City Center' });
+
+
+  useEffect(() => {
+    if (state.activeTab === 'profile') {
+      setActiveTab('profile');
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [state, navigate]);
 
   useEffect(() => {
     if (activeTabfromURL && validTabs.includes(activeTabfromURL)) {
@@ -192,7 +202,7 @@ export default function ProviderDashboard() {
   const statCards = [
     { label: 'Total Bookings', value: stats.totalBookings, icon: Calendar, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/20' },
     { label: 'Accepted', value: stats.accepted, icon: Calendar, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
-    { label: 'Completed Jobs', value: stats.completed, icon: LayoutDashboard, color: 'text-success', bg: 'bg-green-50 dark:bg-green-900/20' },
+    { label: 'Completed Jobs', value: stats.completed, icon: Home, color: 'text-success', bg: 'bg-green-50 dark:bg-green-900/20' },
     { label: 'Pending', value: stats.pending, icon: Calendar, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
     { label: 'Cancelled', value: stats.cancelled, icon: Calendar, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20' },
     { label: 'Total Services', value: services.length, icon: Server, color: 'text-primary', bg: 'bg-primary/10' },
@@ -213,7 +223,7 @@ export default function ProviderDashboard() {
           providerEarningsData={providerEarningsData}
           myBookings={bookings}
           allServices={services}
-        // services={services}
+          onTabChange={handleTabChange}
         />;
       case 'services':
         return <ServicesTab services={services} onDelete={deleteItem} />;
@@ -224,7 +234,16 @@ export default function ProviderDashboard() {
       case 'profile':
         return <EditProfile />;
       default:
-        return <OverviewTab statCards={statCards} user={user} myBookings={bookings} allServices={services} providerEarningsData={providerEarningsData} isAvailable={isAvailable} provider={providerStats} />;
+        return <OverviewTab
+          statCards={statCards}
+          user={user}
+          myBookings={bookings}
+          allServices={services}
+          providerEarningsData={providerEarningsData}
+          isAvailable={isAvailable}
+          provider={providerStats}
+          onTabChange={handleTabChange}
+        />;
     }
   };
 
@@ -236,7 +255,7 @@ export default function ProviderDashboard() {
           <div className="p-6 border-b border-slate-800">
             <div className="flex items-center gap-3 mb-4">
               {user?.avatar
-                ? <img src={user.avatar} alt="" className="w-12 h-12 rounded-2xl ring-2 ring-primary/40 object-cover" />
+                ? <img src={user.avatar.startsWith('http') ? user.avatar : `http://localhost:3000${user.avatar}`} alt="" className="w-12 h-12 rounded-2xl ring-2 ring-primary/40 object-cover" />
                 : <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white font-bold flex items-center justify-center">{getInitials(user?.name || 'P')}</div>
               }
               <div className="min-w-0">
