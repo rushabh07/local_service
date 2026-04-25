@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -33,7 +33,7 @@ export default function Booking() {
 
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [bookingId, setBookingId] = useState(`B-${Math.floor(10000 + Math.random() * 90000)}`);
+  const [bookingId, setBookingId] = useState(null);
 
   const [details, setDetails] = useState({
     date: new Date(Date.now() + 86400000), // tomorrow
@@ -46,6 +46,10 @@ export default function Booking() {
 
   const tax = service.price * 0.18;
   const total = service.price + tax;
+
+  useEffect(() => {
+    setBookingId(`B-${Math.floor(10000 + Math.random() * 90000)}`)
+  }, [])
 
   const validateDetails = () => {
     const errs = {};
@@ -67,6 +71,7 @@ export default function Booking() {
     try {
 
       const bookingData = {
+        bookingId,
         customerId: user?.uid,
         providerId: service?.providerId,
         serviceId: service?.id,
@@ -76,7 +81,7 @@ export default function Booking() {
         note: details.note,
         amount: Math.round(total),
       };
-      console.log(bookingData)
+      // console.log(bookingData)
 
       const res = await bookingsAPI.create(bookingData);
 

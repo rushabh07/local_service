@@ -12,7 +12,7 @@ import { formatCurrency, formatDate, getInitials } from '../../utils';
 import { reviewsAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 import { useLocation } from 'react-router-dom';
-import EditProfile from '../../components/common/EditProfile';
+import ProfileTab from '../../components/common/ProfileTab';
 
 const NAV_ITEMS = [
   { id: 'overview', label: 'Overview', icon: Home },
@@ -764,7 +764,7 @@ export default function UserDashboard() {
 
           {/* ── PROFILE ── */}
           {activeTab === 'profile' && (
-            <EditProfile />
+            <ProfileTab />
           )}
 
           {/* ── PAYMENTS ── */}

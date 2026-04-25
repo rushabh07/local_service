@@ -14,7 +14,7 @@ import OverviewTab from '../../components/provider/OverviewTab';
 import ServicesTab from '../../components/provider/ServicesTab';
 import BookingsTab from '../../components/provider/BookingsTab';
 import ReviewsTab from '../../components/provider/ReviewsTab';
-import EditProfile from '../../components/common/EditProfile';
+import ProfileTab from '../../components/common/ProfileTab';
 
 import { providerEarningsData } from '../../data/mockData';
 
@@ -232,7 +232,7 @@ export default function ProviderDashboard() {
       case 'reviews':
         return <ReviewsTab reviews={reviews} />;
       case 'profile':
-        return <EditProfile />;
+        return <ProfileTab />;
       default:
         return <OverviewTab
           statCards={statCards}
