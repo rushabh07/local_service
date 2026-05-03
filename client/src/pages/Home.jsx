@@ -5,6 +5,7 @@ import ServiceCard from '../components/service/ServiceCard';
 import { mockServices, mockProviders, stats, testimonials } from '../data/mockData';
 import { SERVICE_CATEGORIES } from '../constants';
 import { formatCurrency } from '../utils';
+import {servicesAPI, providerAPI} from '../services/api'
 
 const statItems = [
   { label: 'Happy Customers', value: stats.users, suffix: '+', color: 'text-primary' },
@@ -33,7 +34,34 @@ function AnimatedCounter({ value, suffix = '' }) {
 export default function Home() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const popularServices = mockServices.filter(s => s.popular).slice(0, 4);
+  const [popularServices, setPopulerServices] = useState([]);
+  const [provider, setProvider] = useState([]);
+  // console.log(popularServices.map(d => d.populer))
+
+   useEffect(() => {
+      const fetchServices = async () => {
+        try {
+          const res = await servicesAPI.getAll();
+          console.log("ServicesData: ",res.data); 
+          setPopulerServices(res.data);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
+      const fetchProviders = async () => {
+            try {
+              const res = await providerAPI.getAll();
+              // console.log("ProviderData: ",res.data); 
+              setProvider(res.data);
+            } catch (error) {
+              console.error(error);
+            }
+          };
+  
+      fetchServices();
+      fetchProviders();
+    }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -140,9 +168,19 @@ export default function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {popularServices.map(service => {
-              const provider = mockProviders.find(p => p.id === service.providerId);
-              return <ServiceCard key={service.id} service={service} provider={provider} />;
+            {
+            
+            popularServices
+            .filter(service => service.popular === true)
+            .slice(0, 4)
+            .map(service => {
+              const serviceProvider =  provider.find(
+                (p) =>
+                  String(p.id) === String(service.providerId) ||
+                  String(p.providerId) === String(service.providerId)
+              );
+              
+                return <ServiceCard key={service.id} service={service} provider={serviceProvider} />;
             })}
           </div>
           <div className="text-center mt-8 md:hidden">

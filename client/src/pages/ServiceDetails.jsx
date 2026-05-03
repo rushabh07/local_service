@@ -21,44 +21,101 @@ export default function ServiceDetails() {
   const [reviews, setReviews] = useState([]);
   const service = location.state?.service;
   const provider = location.state?.provider;
-  const isRestricted = user?.role === "provider" || user?.role === "admin";
-  const isFavorited = (user?.favorites || []).map(Number).includes(Number(service?.id));
+  const isRestricted = !user || user?.role === "provider" || user?.role === "admin";
+  // const isFavorited = (user?.favorites || []).map(Number).includes(Number(service?.id));
+  const isFavorited = user?.favorites
+  ? user.favorites.map(Number).includes(Number(service?.id))
+  : false;
   // const [userName, setUserName] = useState({});
   // const [userAvatars, setUserAvatars] = useState({});
 
   const [usersMap, setUsersMap] = useState({});
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const uniqueUserIds = [...new Set(reviews.map(r => r.userId))];
+    // const fetchUsers = async () => {
+    //   try {
+    //     const uniqueUserIds = [...new Set(reviews.map(r => r.userId))];
 
-        const map = {};
+    //     const map = {};
 
-        await Promise.all(
-          uniqueUserIds.map(async (id) => {
-            try {
-              const res = await usersAPI.getUser(id);
-              map[id] = {
-                name: res.data.name,
-                avatar: res.data.avatar?.startsWith('http') ? res.data.avatar : (res.data.avatar ? `http://localhost:3000${res.data.avatar}` : "/default-avatar.png"),
-              };
-            } catch {
-              map[id] = {
-                name: "Unknown User",
-                avatar: "/default-avatar.png",
-              };
-            }
-          })
-        );
+    //     await Promise.all(
+    //       uniqueUserIds.map(async (id) => {
+    //         try {
+    //           const res = await usersAPI.getUser(id);
+    //           map[id] = {
+    //             name: res.data.name,
+    //             avatar: res.data.avatar?.startsWith('http') ? res.data.avatar : (res.data.avatar ? `http://localhost:3000${res.data.avatar}` : "/default-avatar.png"),
+    //           };
+    //         } catch {
+    //           map[id] = {
+    //             name: "Unknown User",
+    //             avatar: "/default-avatar.png",
+    //           };
+    //         }
+    //       })
+    //     );
 
-        setUsersMap(map);
-      } catch (err) {
-        console.error(err);
-      }
-    };
+    //     setUsersMap(map);
+    //   } catch (err) {
+    //     console.error(err);
+    //   }
+    // };
 
-    if (reviews.length) fetchUsers();
+   const fetchUsers = async () => {
+  try {
+    const uniqueUserIds = [...new Set(reviews.map(r => r.userId))];
+
+    const map = {};
+
+    await Promise.all(
+      uniqueUserIds.map(async (id) => {
+
+        // ✅ Skip invalid IDs (VERY IMPORTANT)
+        if (!id || typeof id !== "string") {
+          map[id] = {
+            name: "Anonymous",
+            avatar: "/default-avatar.png",
+          };
+          return;
+        }
+
+        try {
+          const res = await usersAPI.getUser(id);
+
+          map[id] = {
+            name: res.data.name || "Anonymous",
+            avatar: res.data.avatar
+              ? res.data.avatar.startsWith("http")
+                ? res.data.avatar
+                : `http://localhost:3000${res.data.avatar}`
+              : "/default-avatar.png",
+          };
+
+        } catch (err) {
+
+          // ✅ Ignore 404 silently
+          if (err.response?.status !== 404) {
+            console.error("User fetch error:", err);
+          }
+
+          map[id] = {
+            name: "Anonymous",
+            avatar: "/default-avatar.png",
+          };
+        }
+      })
+    );
+
+    setUsersMap(map);
+
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+     if (!reviews.length) return;
+
+  fetchUsers();
   }, [reviews]);
 
   useEffect(() => {
@@ -89,27 +146,36 @@ export default function ServiceDetails() {
     );
   }
 
+  // const handleFavorite = async () => {
+  //   if (!isAuthenticated) { navigate('/login'); return; }
+
+  //   // // DEBUG LOGS
+  //   // console.log("ServiceDetails: user object:", user);
+  //   // console.log("ServiceDetails: user.uid:", user?.uid);
+
+  //   const favs = user.favorites || [];
+  //   const updated = isFavorited ? favs.map(Number).filter(fid => fid !== Number(service.id)) : [...favs.map(Number), Number(service.id)];
+
+  //   // console.log("ServiceDetails: updated favorites:", updated);
+
+  //   try {
+  //     const res = await usersAPI.updateFav(user?.uid, updated);
+  //     updateUser({ favorites: res.data.user.favorites });
+  //     toast.success(isFavorited ? 'Removed from favorites' : 'Added to favorites! ❤️');
+  //   } catch (error) {
+  //     console.error("ServiceDetails: error updating favorites:", error);
+  //     toast.error('Failed to update favorites');
+  //   }
+  // };
+
+
   const handleFavorite = async () => {
-    if (!isAuthenticated) { navigate('/login'); return; }
-
-    // // DEBUG LOGS
-    // console.log("ServiceDetails: user object:", user);
-    // console.log("ServiceDetails: user.uid:", user?.uid);
-
-    const favs = user.favorites || [];
-    const updated = isFavorited ? favs.map(Number).filter(fid => fid !== Number(service.id)) : [...favs.map(Number), Number(service.id)];
-
-    // console.log("ServiceDetails: updated favorites:", updated);
-
-    try {
-      const res = await usersAPI.updateFav(user?.uid, updated);
-      updateUser({ favorites: res.data.user.favorites });
-      toast.success(isFavorited ? 'Removed from favorites' : 'Added to favorites! ❤️');
-    } catch (error) {
-      console.error("ServiceDetails: error updating favorites:", error);
-      toast.error('Failed to update favorites');
-    }
-  };
+  if (!isAuthenticated || !user) {
+    toast.error('Please login first');
+    navigate('/login');
+    return;
+  }
+}
 
   const handleBook = () => {
     if (!isAuthenticated) {
@@ -267,11 +333,11 @@ export default function ServiceDetails() {
                       <div className="text-center py-8 text-slate-500">No reviews yet. Be the first!</div>
                     ) : (
                       reviews.map(r => (
-                        <div key={r.id} className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
-                          <img src={usersMap[r.userId]?.avatar?.startsWith('http') ? usersMap[r.userId].avatar : (usersMap[r.userId]?.avatar ? `http://localhost:3000${usersMap[r.userId].avatar}` : "/default-avatar.png")} alt={usersMap[r.userId]?.name} className="w-10 h-10 rounded-full shrink-0 object-cover" />
+                        <div key={r.id || r._id} className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
+                          <img src={usersMap[r.userId]?.avatar?.startsWith('http') ? usersMap[r.userId].avatar : (usersMap[r.userId]?.avatar ? `http://localhost:3000${usersMap[r.userId].avatar}` : "/default-avatar.png")} alt={usersMap[r.userId]?.name || "Anonymous"} className="w-10 h-10 rounded-full shrink-0 object-cover" />
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="font-bold text-sm text-slate-800 dark:text-white">{usersMap[r.userId]?.name}</span>
+                              <span className="font-bold text-sm text-slate-800 dark:text-white">{usersMap[r.userId]?.name || "Anonymous"}</span>
                               <span className="text-xs text-slate-400">{formatDate(r.date)}</span>
                             </div>
                             <div className="flex mb-2">
@@ -303,7 +369,7 @@ export default function ServiceDetails() {
                 <p className="text-xs text-slate-500">Inclusive of all charges</p>
               </div>
 
-              {
+              {/* {
 
                 isRestricted ? (
                   <Link to="/services" className="block w-full">
@@ -324,7 +390,32 @@ export default function ServiceDetails() {
                       </Button>
                     </Link>
                   </>
-                )}
+                )} */}
+
+                {!user ? (
+  <Button onClick={() => navigate('/login')} fullWidth size="lg" className="mb-3">
+    Login to Continue
+  </Button>
+) : isRestricted ? (
+  <Link to="/services" className="block w-full">
+    <Button variant="outline" fullWidth size="lg" className="mb-3">
+      <ArrowLeft className="w-4 h-4 mr-2" />
+      Back to Services
+    </Button>
+  </Link>
+) : (
+  <>
+    <Button onClick={handleBook} fullWidth size="lg" className="mb-3">
+      Book Now
+    </Button>
+    <Link to="/services" className="block w-full">
+      <Button variant="outline" fullWidth size="lg" className="mb-3">
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        Back to Services
+      </Button>
+    </Link>
+  </>
+)}
               {/* <Link to="/services" className="block w-full">
                 <Button variant="outline" fullWidth size="lg" className="mb-3">
                   <ArrowLeft className="w-4 h-4 mr-2" />

@@ -160,9 +160,18 @@ router.get("/:id", async (req, res) => {
         let user;
         if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
             user = await User.findById(req.params.id);
+            if (!user) {
+                user = await Provider.findById(req.params.id);
+            }
         }
         if (!user) {
             user = await User.findOne({ uid: req.params.id });
+        }
+        if (!user) {
+            user = await Provider.findOne({ providerId: req.params.id });
+        }
+        if (!user) {
+            user = await Provider.findOne({ uid: req.params.id });
         }
         if (!user) {
             return res.status(404).json({ message: "User not found" });
