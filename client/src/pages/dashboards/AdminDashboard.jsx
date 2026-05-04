@@ -50,6 +50,7 @@ export default function AdminDashboard() {
   const [reviews, setReviews] = useState([]);
   const [categories, setCategories] = useState([]);
 
+  // console.log(reviews);
   // Sync state if URL changes directly
   useEffect(() => {
     if (activeTabfromURL && validTabs.includes(activeTabfromURL)) {
@@ -192,8 +193,8 @@ export default function AdminDashboard() {
                   key={item.id}
                   onClick={() => handleTabChange(item.id)}
                   className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === item.id
-                      ? "bg-indigo-600 text-white"
-                      : "hover:bg-white/5 hover:text-white"
+                    ? "bg-indigo-600 text-white"
+                    : "hover:bg-white/5 hover:text-white"
                     }`}
                 >
                   <Icon className="w-5 h-5" />

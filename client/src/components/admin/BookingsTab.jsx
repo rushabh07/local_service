@@ -33,7 +33,7 @@ export default function BookingsTab({ bookings, onDelete }) {
                 <tr><td colSpan="6" className="text-center py-8 text-slate-500">No bookings found.</td></tr>
               ) : bookings.map(b => (
                 <tr key={b._id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                  <td className="px-6 py-4 font-mono text-xs text-indigo-600 dark:text-indigo-400">{b._id?.slice(-8) || b.id}</td>
+                  <td className="px-6 py-4 font-mono text-xs text-indigo-600 dark:text-indigo-400">{b.bookingId}</td>
                   <td className="px-6 py-4">
                     <p className="font-bold text-slate-800 dark:text-white">{b.serviceId || 'Unknown Service'}</p>
                     <p className="text-xs text-slate-500 mt-1">Provider: {b.providerId || 'TBD'}</p>
@@ -44,12 +44,11 @@ export default function BookingsTab({ bookings, onDelete }) {
                   </td>
                   <td className="px-6 py-4 font-bold text-slate-800 dark:text-white">{b.amount ? formatCurrency(b.amount) : '₹0'}</td>
                   <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 text-[10px] uppercase font-bold rounded-full ${
-                      b.status === 'Completed' ? 'bg-green-100 text-green-700' :
+                    <span className={`px-2.5 py-1 text-[10px] uppercase font-bold rounded-full ${b.status === 'Completed' ? 'bg-green-100 text-green-700' :
                       b.status === 'Pending' ? 'bg-amber-100 text-amber-700' :
-                      b.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
-                      'bg-blue-100 text-blue-700'
-                    }`}>
+                        b.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
+                          'bg-blue-100 text-blue-700'
+                      }`}>
                       {b.status || 'Pending'}
                     </span>
                   </td>

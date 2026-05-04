@@ -1,11 +1,64 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trash2, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { usersAPI } from '../../services/api';
 
 export default function ReviewsTab({ reviews, onDelete }) {
   const navigate = useNavigate();
+  const [usersMap, setUsersMap] = useState({});
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        // ✅ Get unique userIds from reviews
+        const userIds = [...new Set(reviews.map(r => r.userId))];
+
+        const map = {};
+
+        await Promise.all(
+          userIds.map(async (id) => {
+            if (!id) return;
+
+            try {
+              const res = await usersAPI.getUser(id);
+
+              const user = res.data;
+
+              // ✅ Match using uid
+              if (user.uid === id && user.role === "customer") {
+                map[id] = {
+                  name: user.name,
+                  avatar: user.avatar
+                    ? user.avatar.startsWith("http")
+                      ? user.avatar
+                      : `http://localhost:3000${user.avatar}`
+                    : "/default-avatar.png",
+                };
+              }
+
+            } catch (err) {
+              // fallback
+              map[id] = {
+                name: "Guest User",
+                avatar: "/default-avatar.png",
+              };
+            }
+          })
+        );
+
+        setUsersMap(map);
+
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    if (reviews.length) fetchUsers();
+
+  }, [reviews]);
+
+  // console.log(usersMap);
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this review?")) {
       onDelete('reviews', id);
@@ -30,7 +83,8 @@ export default function ReviewsTab({ reviews, onDelete }) {
           <table className="w-full text-sm text-left">
             <thead className="bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 capitalize">
               <tr>
-                <th className="px-6 py-4 font-semibold">User</th>
+                <th className="px-6 py-4 font-semibold">UserID</th>
+                <th className="px-6 py-4 font-semibold">User Name</th>
                 <th className="px-6 py-4 font-semibold">Rating</th>
                 <th className="px-6 py-4 font-semibold lg:w-1/2">Comment</th>
                 <th className="px-6 py-4 font-semibold">Date</th>
@@ -40,36 +94,40 @@ export default function ReviewsTab({ reviews, onDelete }) {
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
               {reviews.length === 0 ? (
                 <tr><td colSpan="5" className="text-center py-8 text-slate-500">No approved reviews found.</td></tr>
-              ) : reviews.map(r => (
-                <tr key={r._id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                       <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-slate-500 font-bold">
-                         {r.userName?.charAt(0).toUpperCase() || 'U'}
-                       </div>
-                       <span className="font-bold text-slate-800 dark:text-white">{r.userName}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-amber-500 font-bold whitespace-nowrap">
-                    {'⭐'.repeat(Math.round(r.rating || 0))} <span className="text-slate-500 font-normal ml-1">({r.rating})</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <p className="text-slate-600 dark:text-slate-300 line-clamp-2 md:line-clamp-none">{r.comment}</p>
-                  </td>
-                  <td className="px-6 py-4 text-slate-500 whitespace-nowrap">{r.date || 'N/A'}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex justify-center">
-                      <button
-                        onClick={() => handleDelete(r._id)}
-                        className="p-2 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 rounded-lg transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              ) : reviews.map(r => {
+                const userData = usersMap[r.userId];
+                return (
+                  <tr key={r._id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                    <td className="px-6 py-4">{r.userId}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-slate-500 font-bold overflow-hidden">
+                          {userData?.avatar ? <img src={userData?.avatar} className='w-full h-full object-fill' alt={userData?.name} /> : 'U'}
+                        </div>
+                        <span className="font-bold text-slate-800 dark:text-white">{userData?.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-amber-500 font-bold whitespace-nowrap">
+                      {'⭐'.repeat(Math.round(r.rating || 0))} <span className="text-slate-500 font-normal ml-1">({r.rating})</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-slate-600 dark:text-slate-300 line-clamp-2 md:line-clamp-none">{r.comment}</p>
+                    </td>
+                    <td className="px-6 py-4 text-slate-500 whitespace-nowrap">{r.date || 'N/A'}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex justify-center">
+                        <button
+                          onClick={() => handleDelete(r._id)}
+                          className="p-2 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 rounded-lg transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

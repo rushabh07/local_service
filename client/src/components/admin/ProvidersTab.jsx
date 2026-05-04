@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function ProvidersTab({ providers, onDelete }) {
@@ -34,11 +34,11 @@ export default function ProvidersTab({ providers, onDelete }) {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       {p.avatar ? (
-                         <img src={p.avatar.startsWith('http') ? p.avatar : `http://localhost:3000${p.avatar}`} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />
+                        <img src={p.avatar.startsWith('http') ? p.avatar : `http://localhost:3000${p.avatar}`} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />
                       ) : (
-                         <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
-                           {p.name?.charAt(0) || 'P'}
-                         </div>
+                        <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+                          {p.name?.charAt(0) || 'P'}
+                        </div>
                       )}
                       <div>
                         <p className="font-bold text-slate-800 dark:text-white">{p.name}</p>
@@ -47,8 +47,8 @@ export default function ProvidersTab({ providers, onDelete }) {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="font-medium text-slate-700 dark:text-slate-300">{p.business}</p>
-                    <span className="inline-block mt-1 px-2 py-0.5 text-[10px] font-bold bg-blue-50 text-blue-600 rounded-full">{p.category}</span>
+                    <p className="font-medium text-slate-700 dark:text-slate-300">{p?.verifiedBadge ? <CheckCircle className='w-5 h-5 text-green-600 bg-green-100 rounded-full p-0.5' /> : "Not Verified"}</p>
+                    {/* <span className="inline-block mt-1 px-2 py-0.5 text-[10px] font-bold bg-blue-50 text-blue-600 rounded-full">{p.category}</span> */}
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm">
