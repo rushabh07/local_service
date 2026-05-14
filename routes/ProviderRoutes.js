@@ -107,4 +107,23 @@ router.put("/:providerId", upload.single("avatar"), async (req, res) => {
     }
 });
 
+// Delete provider
+router.delete("/:providerId", async (req, res) => {
+    try {
+        let provider;
+        if (req.params.providerId.match(/^[0-9a-fA-F]{24}$/)) {
+            provider = await Provider.findByIdAndDelete(req.params.providerId);
+        }
+        if (!provider) {
+            provider = await Provider.findOneAndDelete({ providerId: req.params.providerId });
+        }
+        if (!provider) {
+            return res.status(404).json({ message: "Provider not found" });
+        }
+        res.json({ message: "Provider deleted successfully", provider });
+    } catch (error) {
+        res.status(500).json({ message: "Error deleting provider", error: error.message });
+    }
+});
+
 module.exports = router;

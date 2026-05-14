@@ -95,15 +95,6 @@ router.get("/", async (req, res) => {
     res.json([...users, ...mappedProviders]);
 });
 
-// router.put("/:id", async (req, res) => {
-//     try {
-//         const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
-//         res.json({ message: "User Updated", user });
-//     }
-//     catch (error) {
-//         res.json({ message: "User Update Failed", user });
-//     }
-// });
 
 router.put("/:id", upload.single("avatar"), async (req, res) => {
     console.log("Update User Route HIT");

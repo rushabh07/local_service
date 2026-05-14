@@ -39,6 +39,7 @@ const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
 const ContactUs = React.lazy(() => import('./pages/ContactUs'));
 const AddService = React.lazy(() => import('./pages/services/AddService'));
 const EditService = React.lazy(() => import('./pages/services/EditService'));
+const AddCategory = React.lazy(() => import('./pages/admin/AddCategory'));
 
 /** Main layout: Navbar + page outlet + Footer + scroll-to-top */
 function MainLayout() {
@@ -99,6 +100,7 @@ function App() {
                   <Route path="register" element={<Register />} />
                   <Route path="add-service" element={<AddService />} />
                   <Route path="edit-service/:serviceId" element={<EditService />} />
+                  <Route path="admin/add-category" element={<AddCategory />} />
                   <Route path="admin/approve-reviews" element={<ApproveReviews />} />
 
                   {/* ── INFORMATIONAL PAGES ── */}

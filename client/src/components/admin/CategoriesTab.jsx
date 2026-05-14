@@ -1,8 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Trash2, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function CategoriesTab({ categories, onDelete }) {
+  const navigate = useNavigate();
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this category?")) {
       onDelete('categories', id);
@@ -15,10 +17,7 @@ export default function CategoriesTab({ categories, onDelete }) {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Category Management</h1>
         <button
-          onClick={() => {
-            // Placeholder for future Add Category functionality
-            toast('Add Category form would open here', { icon: 'ℹ️' });
-          }}
+          onClick={() => navigate("/admin/add-category")}
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium transition-colors"
         >
           <Plus className="w-5 h-5" /> Add Category
