@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
-  User, Mail, Phone, MapPin, Calendar, Star,
-  CheckCircle, DollarSign, Edit, ShieldCheck
+  Mail, Phone, MapPin, Calendar,
+  CheckCircle, Edit, ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { providerAPI } from '../../services/api';
-import { formatDate, formatCurrency } from '../../utils';
+import { formatDate, formatCurrency, getAvatarUrl } from '../../utils';
 import EditProfile from './EditProfile';
 
 export default function ProfileTab() {
@@ -13,6 +13,7 @@ export default function ProfileTab() {
   const [isEditing, setIsEditing] = useState(false);
   const [extraData, setExtraData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
 
   useEffect(() => {
     if (user?.role === 'provider') {
@@ -24,7 +25,7 @@ export default function ProfileTab() {
     setLoading(true);
     try {
       // Use the specific provider lookup if it's a provider
-      const id = user?.uid || user?.providerId || user?._id;
+      const id = user?.uid;
       const res = await providerAPI.getProvider(id);
       setExtraData(res.data);
     } catch (err) {
@@ -84,10 +85,11 @@ export default function ProfileTab() {
           {/* Avatar and Identity */}
           <div className="relative -mt-16 mb-8 flex flex-col items-center md:items-start md:flex-row md:gap-8">
             <div className="relative group">
-              {profileData?.avatar
+              {profileData?.avatar && !avatarError
                 ? <img
-                  src={profileData.avatar.startsWith('http') ? profileData.avatar : `http://localhost:3000${profileData.avatar}`}
+                  src={getAvatarUrl(profileData.avatar)}
                   alt={profileData.name}
+                  onError={() => setAvatarError(true)}
                   className="w-36 h-36 rounded-[2rem] object-cover ring-8 ring-white dark:ring-slate-800 shadow-2xl transition-transform duration-500 group-hover:scale-105"
                 />
                 : <div className="w-36 h-36 rounded-[2rem] bg-primary text-white text-5xl font-bold flex items-center justify-center ring-8 ring-white dark:ring-slate-800 shadow-2xl">
