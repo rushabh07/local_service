@@ -1,39 +1,51 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
-  Home, Calendar, BarChart2, Settings, LogOut,
-  ToggleLeft, Server, Star, User
-} from 'lucide-react';
-import api from '../../services/api';
-import toast from 'react-hot-toast';
-import { useAuth } from '../../context/AuthContext';
-import { getInitials } from '../../utils';
+  Home,
+  Calendar,
+  BarChart2,
+  Settings,
+  LogOut,
+  ToggleLeft,
+  Server,
+  Star,
+  User,
+} from "lucide-react";
+import api, { usersAPI } from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
+import { getInitials, getAvatarUrl } from "../../utils";
 
 // Subcomponents
-import OverviewTab from '../../components/provider/OverviewTab';
-import ServicesTab from '../../components/provider/ServicesTab';
-import BookingsTab from '../../components/provider/BookingsTab';
-import ReviewsTab from '../../components/provider/ReviewsTab';
-import ProfileTab from '../../components/common/ProfileTab';
+import OverviewTab from "../../components/provider/OverviewTab";
+import ServicesTab from "../../components/provider/ServicesTab";
+import BookingsTab from "../../components/provider/BookingsTab";
+import ReviewsTab from "../../components/provider/ReviewsTab";
+import ProfileTab from "../../components/common/ProfileTab";
 
-import { providerEarningsData } from '../../data/mockData';
+import { providerEarningsData } from "../../data/mockData";
+import toast from "react-hot-toast";
 
 const NAV_ITEMS = [
-  { id: 'overview', label: 'Overview', icon: Home },
-  { id: 'services', label: 'My Services', icon: Server },
-  { id: 'bookings', label: 'Bookings', icon: Calendar },
-  { id: 'reviews', label: 'Reviews', icon: Star },
-  { id: 'profile', label: 'Profile', icon: User },
+  { id: "overview", label: "Overview", icon: Home },
+  { id: "services", label: "My Services", icon: Server },
+  { id: "bookings", label: "Bookings", icon: Calendar },
+  { id: "reviews", label: "Reviews", icon: Star },
+  { id: "profile", label: "Profile", icon: User },
 ];
 
 export default function ProviderDashboard() {
   const { activeTabfromURL } = useParams();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [avatarError, setAvatarError] = useState(false);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [user?.avatar]);
 
   const validTabs = NAV_ITEMS.map((item) => item.id);
   const [activeTab, setActiveTab] = useState(() => {
-    return validTabs.includes(activeTabfromURL) ? activeTabfromURL : 'overview';
+    return validTabs.includes(activeTabfromURL) ? activeTabfromURL : "overview";
   });
 
   const [loading, setLoading] = useState(false);
@@ -46,12 +58,15 @@ export default function ProviderDashboard() {
   const location = useLocation();
   const state = location.state || {};
 
-  const [providerStats, setProviderStats] = useState({ rating: 4.8, experience: 5, area: 'City Center' });
-
+  const [providerStats, setProviderStats] = useState({
+    rating: 4.8,
+    experience: 5,
+    area: "City Center",
+  });
 
   useEffect(() => {
-    if (state.activeTab === 'profile') {
-      setActiveTab('profile');
+    if (state.activeTab === "profile") {
+      setActiveTab("profile");
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [state, navigate]);
@@ -64,10 +79,7 @@ export default function ProviderDashboard() {
 
   useEffect(() => {
     fetchTabData(activeTab);
-
-
   }, [activeTab]);
-
 
   useEffect(() => {
     fetchServices();
@@ -86,25 +98,76 @@ export default function ProviderDashboard() {
     navigate("/");
   };
 
-  const toggleAvailability = () => {
-    setIsAvailable(p => !p);
-    toast.success(isAvailable ? 'You are now offline' : 'You are now available for bookings!');
-  };
+  // const toggleAvailability = async () => {
+  //   setIsAvailable((p) => !p);
+  //   // if (!isAvailable) {
+  //   //   user.isAvailable = false;
+  //   //   const res = await usersAPI.updateUser(user.id, {
+  //   //     user: { isAvailable: false },
+  //   //   });
+  //   //   console.log(res.data);
+  //   // } else {
+  //   //   user.isAvailable = true;
+  //   //   const res = await usersAPI.updateUser(user.id, {
+  //   //     user: { isAvailable: true },
+  //   //   });
+  //   //   console.log(res.data);
+  //   // }
+  //   try {
+  //     await usersAPI.updateUser(user.id, {
+  //       user: { isAvailable: !isAvailable },
+  //     });
+  //     toast.success(
+  //       isAvailable
+  //         ? "You are now offline"
+  //         : "You are now available for bookings!",
+  //     );
+  //   } catch (error) {
+  //     toast.error(error.toString());
+  //   }
+  // };
+
+  // const toggleAvailability = async () => {
+  //   // 1. Calculate the new value once
+  //   const newAvailability = !isAvailable;
+  //   console.log(user.isAvailable, newAvailability);
+  //   setupdatedUser({ ...user, isAvailable: newAvailability });
+  //   try {
+  //     // 2. Make the API call first
+  //     console.log(user.isAvailable);
+  //     const res = await usersAPI.updateAvailability(user.uid, updatedUser);
+
+  //     console.log(res.data);
+
+  //     // 3. Only update the UI if the API call succeeds
+  //     setIsAvailable(newAvailability);
+
+  //     // 4. Show success message (using the new variable makes the logic easier to read)
+  //     toast.success(
+  //       newAvailability
+  //         ? "You are now available for bookings!"
+  //         : "You are now offline",
+  //     );
+  //   } catch (error) {
+  //     // UI state never changed, so we just show the error
+  //     toast.error(error.toString());
+  //   }
+  // };
 
   const fetchTabData = async (tab) => {
     setLoading(true);
     try {
-      if (tab === 'overview') {
+      if (tab === "overview") {
         if (!services.length) await fetchServices();
         if (!bookings.length) await fetchBookings();
         if (!reviews.length) await fetchReviews();
-      } else if (tab === 'services' && services.length === 0) {
+      } else if (tab === "services" && services.length === 0) {
         await fetchServices();
-      } else if (tab === 'bookings' && bookings.length === 0) {
+      } else if (tab === "bookings" && bookings.length === 0) {
         await fetchBookings();
         // Fallback for bookings matching my services if they were fetched just now but fetchBookings needs my services
         if (services.length === 0) await fetchServices();
-      } else if (tab === 'reviews' && reviews.length === 0) {
+      } else if (tab === "reviews" && reviews.length === 0) {
         await fetchReviews();
       }
     } catch (error) {
@@ -118,25 +181,32 @@ export default function ProviderDashboard() {
     try {
       const id = user?.uid;
       // console.log(id);
-      const res = await api.get(`http://localhost:3000/api/services/provider/${id}`);
+      const res = await api.get(
+        `http://localhost:3000/api/services/provider/${id}`,
+      );
       // console.log(res.data);
       // const myServices = res.data.filter(s => s.providerId === user?._id || s.providerId === user?.id || String(s.providerId) === String(user?._id));
       // if ((s => s.providerId === user?._id || s.providerId === user?.id || String(s.providerId) === String(user?._id))) {
       //   console.log(user?.id);
       // }
       setServices(res.data);
-
-    } catch (e) { toast.error("Failed to fetch services"); }
+    } catch (e) {
+      toast.error("Failed to fetch services");
+    }
   };
 
   const fetchBookings = async () => {
     try {
       const id = user?.uid;
-      const res = await api.get(`http://localhost:3000/api/bookings/provider/${id}`);
+      const res = await api.get(
+        `http://localhost:3000/api/bookings/provider/${id}`,
+      );
       // const myServicesIds = services.length > 0 ? services.map(s => s._id || s.id) : (await api.get('/services')).data.filter(s => s.providerId === user?._id || s.providerId === user?.id).map(s => s._id);
       // const myBookings = res.data.filter(b => b.providerId === user?._id || b.providerId === user?.id || myServicesIds.includes(b.serviceId));
       setBookings(res.data);
-    } catch (e) { toast.error("Failed to fetch bookings"); }
+    } catch (e) {
+      toast.error("Failed to fetch bookings");
+    }
   };
 
   const fetchReviews = async () => {
@@ -144,22 +214,26 @@ export default function ProviderDashboard() {
       // const serviceIds = services.map(s => s.id);
       const id = user?.uid;
       // console.log(id);
-      const servicesData = await api.get(`http://localhost:3000/api/services/provider/${id}`);
+      const servicesData = await api.get(
+        `http://localhost:3000/api/services/provider/${id}`,
+      );
       // console.log(servicesData.data.map(s => s.id));
       if (servicesData.data.length === 0) {
         setReviews([]);
         return;
-      }
-      else {
-
-        const res = await api.get(`http://localhost:3000/api/reviews/approved/${servicesData.data.map(s => s.id)}`);
+      } else {
+        const res = await api.get(
+          `http://localhost:3000/api/reviews/approved/${servicesData.data.map((s) => s.id)}`,
+        );
         setReviews(res.data);
       }
       // console.log(res.data);
       // const myServicesIds = services.length > 0 ? services.map(s => s._id || s.id) : (await api.get('/services')).data.filter(s => s.providerId === user?._id || s.providerId === user?.id).map(s => s._id);
       // const myReviews = res.data.filter(r => myServicesIds.includes(r.serviceId));
       // console.log(res.data);
-    } catch (e) { toast.error("Failed to fetch reviews"); }
+    } catch (e) {
+      toast.error("Failed to fetch reviews");
+    }
   };
 
   const deleteItem = async (type, id) => {
@@ -175,7 +249,7 @@ export default function ProviderDashboard() {
   const updateBookingStatus = async (id, status) => {
     try {
       const originalBookings = [...bookings];
-      setBookings(bookings.map(b => b._id === id ? { ...b, status } : b));
+      setBookings(bookings.map((b) => (b._id === id ? { ...b, status } : b)));
 
       try {
         await api.put(`/bookings/${id}`, { status });
@@ -187,63 +261,115 @@ export default function ProviderDashboard() {
     } catch (e) {
       console.error(e);
     }
-  }
+  };
 
-  const completedBookings = bookings.filter(b => b.status === "Completed");
+  const completedBookings = bookings.filter((b) => b.status === "Completed");
   const stats = {
     totalBookings: bookings.length,
-    accepted: bookings.filter(b => b.status === "Accepted").length,
+    accepted: bookings.filter((b) => b.status === "Accepted").length,
     completed: completedBookings.length,
-    pending: bookings.filter(b => b.status === "Pending").length,
-    cancelled: bookings.filter(b => b.status === "Cancelled").length,
-    earnings: completedBookings.reduce((sum, b) => sum + (Number(b.amount) || 2000), 0)
+    pending: bookings.filter((b) => b.status === "Pending").length,
+    cancelled: bookings.filter((b) => b.status === "Cancelled").length,
+    earnings: completedBookings.reduce(
+      (sum, b) => sum + (Number(b.amount) || 2000),
+      0,
+    ),
   };
 
   const statCards = [
-    { label: 'Total Bookings', value: stats.totalBookings, icon: Calendar, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/20' },
-    { label: 'Accepted', value: stats.accepted, icon: Calendar, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
-    { label: 'Completed Jobs', value: stats.completed, icon: Home, color: 'text-success', bg: 'bg-green-50 dark:bg-green-900/20' },
-    { label: 'Pending', value: stats.pending, icon: Calendar, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
-    { label: 'Cancelled', value: stats.cancelled, icon: Calendar, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20' },
-    { label: 'Total Services', value: services.length, icon: Server, color: 'text-primary', bg: 'bg-primary/10' },
+    {
+      label: "Total Bookings",
+      value: stats.totalBookings,
+      icon: Calendar,
+      color: "text-indigo-600",
+      bg: "bg-indigo-50 dark:bg-indigo-900/20",
+    },
+    {
+      label: "Accepted",
+      value: stats.accepted,
+      icon: Calendar,
+      color: "text-blue-500",
+      bg: "bg-blue-50 dark:bg-blue-900/20",
+    },
+    {
+      label: "Completed Jobs",
+      value: stats.completed,
+      icon: Home,
+      color: "text-success",
+      bg: "bg-green-50 dark:bg-green-900/20",
+    },
+    {
+      label: "Pending",
+      value: stats.pending,
+      icon: Calendar,
+      color: "text-amber-500",
+      bg: "bg-amber-50 dark:bg-amber-900/20",
+    },
+    {
+      label: "Cancelled",
+      value: stats.cancelled,
+      icon: Calendar,
+      color: "text-red-500",
+      bg: "bg-red-50 dark:bg-red-900/20",
+    },
+    {
+      label: "Total Services",
+      value: services.length,
+      icon: Server,
+      color: "text-primary",
+      bg: "bg-primary/10",
+    },
   ];
 
   const renderTabContent = () => {
-    if (loading && ['services', 'bookings', 'reviews'].includes(activeTab)) {
-      return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div></div>;
+    if (loading && ["services", "bookings", "reviews"].includes(activeTab)) {
+      return (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        </div>
+      );
     }
 
     switch (activeTab) {
-      case 'overview':
-        return <OverviewTab
-          user={user}
-          isAvailable={isAvailable}
-          provider={providerStats}
-          statCards={statCards}
-          providerEarningsData={providerEarningsData}
-          myBookings={bookings}
-          allServices={services}
-          onTabChange={handleTabChange}
-        />;
-      case 'services':
+      case "overview":
+        return (
+          <OverviewTab
+            user={user}
+            isAvailable={isAvailable}
+            provider={providerStats}
+            statCards={statCards}
+            providerEarningsData={providerEarningsData}
+            myBookings={bookings}
+            allServices={services}
+            onTabChange={handleTabChange}
+          />
+        );
+      case "services":
         return <ServicesTab services={services} onDelete={deleteItem} />;
-      case 'bookings':
-        return <BookingsTab bookings={bookings} onUpdateStatus={updateBookingStatus} />;
-      case 'reviews':
+      case "bookings":
+        return (
+          <BookingsTab
+            bookings={bookings}
+            onUpdateStatus={updateBookingStatus}
+          />
+        );
+      case "reviews":
         return <ReviewsTab reviews={reviews} />;
-      case 'profile':
+      case "profile":
         return <ProfileTab />;
       default:
-        return <OverviewTab
-          statCards={statCards}
-          user={user}
-          myBookings={bookings}
-          allServices={services}
-          providerEarningsData={providerEarningsData}
-          isAvailable={isAvailable}
-          provider={providerStats}
-          onTabChange={handleTabChange}
-        />;
+        return (
+          <OverviewTab
+            statCards={statCards}
+            user={user}
+            myBookings={bookings}
+            allServices={services}
+            providerEarningsData={providerEarningsData}
+            isAvailable={isAvailable}
+            provider={providerStats}
+            onTabChange={handleTabChange}
+          />
+        );
     }
   };
 
@@ -251,29 +377,70 @@ export default function ProviderDashboard() {
     <div className="dark:bg-slate-900 min-h-[calc(100vh-64px)] font-sans">
       <div className="flex flex-col md:flex-row min-h-full">
         {/* SIDEBAR */}
-        <aside className="w-full md:w-64 shrink-0 bg-slate-900 text-slate-300 flex flex-col pt-4">
-          <div className="p-6 border-b border-slate-800">
+        <aside className="w-full md:w-64 shrink-0 border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex flex-col pt-4">
+          <div className="p-6 border-b border-slate-100 dark:border-slate-700">
             <div className="flex items-center gap-3 mb-4">
-              {user?.avatar
-                ? <img src={user.avatar.startsWith('http') ? user.avatar : `http://localhost:3000${user.avatar}`} alt="" className="w-12 h-12 rounded-2xl ring-2 ring-primary/40 object-cover" />
-                : <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white font-bold flex items-center justify-center">{getInitials(user?.name || 'P')}</div>
-              }
+              {user?.avatar && !avatarError ? (
+                <img
+                  src={getAvatarUrl(user.avatar)}
+                  alt=""
+                  onError={() => setAvatarError(true)}
+                  className="w-12 h-12 rounded-2xl ring-2 ring-primary/40 object-cover"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white font-bold flex items-center justify-center">
+                  {getInitials(user?.name || "P")}
+                </div>
+              )}
               <div className="min-w-0">
-                <h3 className="font-bold text-white truncate">{user?.name}</h3>
-                <p className="text-xs text-slate-400 capitalize">{user?.role || 'Provider'}</p>
+                <h3 className="font-bold text-slate-800 dark:text-white truncate">
+                  {user?.name}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">
+                  {user?.role || "Provider"}
+                </p>
               </div>
             </div>
             {/* Availability Toggle */}
-            <button
+            {/* <button
               onClick={toggleAvailability}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-colors ${isAvailable ? 'bg-success/20 text-success border border-success/30' : 'bg-slate-800 text-slate-400 border border-slate-700'}`}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-colors ${isAvailable ? "bg-green-50 dark:bg-success/20 text-green-700 dark:text-success border border-green-200 dark:border-success/30" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700"}`}
             >
               <span className="flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${isAvailable ? 'bg-success animate-pulse' : 'bg-slate-500'}`} />
-                {isAvailable ? 'Available' : 'Offline'}
+                <span
+                  className={`w-2 h-2 rounded-full ${isAvailable ? "bg-success animate-pulse" : "bg-slate-500"}`}
+                />
+                {isAvailable ? "Available" : "Offline"}
               </span>
               <ToggleLeft className="w-4 h-4" />
-            </button>
+            </button>*/}
+            {/* <h1 className="text-lg">
+              {user?.isAvailable ? <>Available</> : <>Offline</>}
+            </h1>*/}
+            {/* <div className="flex items-center gap-2">
+              <span className="text-lg dark:text-white m-.5">
+                {user?.isAvailable ? <>Available</> : <>Offline</>}
+              </span>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="isAvailable"
+                  checked={user?.isAvailable}
+                  onChange={toggleAvailability}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-primary"></div>
+              </label>
+            </div>*/}
+
+            <h1 className={`text-lg font-bold`}>
+              Now you are{" "}
+              <span
+                className={`font-bold ${user?.isAvailable ? "text-green-600" : "text-red-600"}`}
+              >
+                {user?.isAvailable ? <>Online</> : <>Offline</>}
+              </span>
+            </h1>
           </div>
 
           <nav className="flex-1 p-4 space-y-1">
@@ -284,8 +451,8 @@ export default function ProviderDashboard() {
                   key={item.id}
                   onClick={() => handleTabChange(item.id)}
                   className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === item.id
-                    ? "bg-indigo-600 text-white"
-                    : "hover:bg-white/5 hover:text-white"
+                      ? "bg-indigo-600 text-white"
+                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-800 dark:hover:text-white"
                     }`}
                 >
                   <Icon className="w-5 h-5" />
@@ -294,8 +461,11 @@ export default function ProviderDashboard() {
               );
             })}
           </nav>
-          <div className="p-4 border-t border-slate-800 space-y-2">
-            <button onClick={handleLogout} className="flex items-center gap-2 w-full px-4 py-2.5 text-red-400 hover:bg-red-500/10 rounded-xl text-sm font-medium transition-colors">
+          <div className="p-4 border-t border-slate-100 dark:border-slate-700 space-y-2">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 w-full px-4 py-2.5 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl text-sm font-medium transition-colors"
+            >
               <LogOut className="w-4 h-4" /> Logout
             </button>
           </div>

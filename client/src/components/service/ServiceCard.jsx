@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Star, MapPin, Clock, Heart, Zap, BadgeCheck } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { formatCurrency } from '../../utils';
+import { formatCurrency, getImageUrl, getAvatarUrl, DEFAULT_AVATAR } from '../../utils';
 import toast from 'react-hot-toast';
 import { usersAPI } from '../../services/api';
 
@@ -13,7 +13,6 @@ export default function ServiceCard({ service, provider }) {
   const isFavorited = (user?.favorites || []).map(Number).includes(Number(service.id));
 
   const isRestricted = user?.role === "provider" || user?.role === "admin";
-  // console.log(provider);
 
   // const handleFavorite = (e) => {
   //   e.preventDefault();
@@ -72,13 +71,13 @@ export default function ServiceCard({ service, provider }) {
     }
   };
   return (
-    <div className="group bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 flex flex-col border border-slate-100 dark:border-slate-700">
+    <div className="group border-2 border-slate-300 dark:border-slate-700 bg-white/60 dark:bg-slate-600/60 rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 flex flex-col">
 
       {/* Image */}
       <div className="relative h-48 overflow-hidden bg-slate-100 dark:bg-slate-700">
         {!imgError && service.image ? (
           <img
-            src={service.image.startsWith('http') ? service.image : `http://localhost:3000${service.image}`}
+            src={getImageUrl(service.image)}
             alt={service.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             onError={() => setImgError(true)}
@@ -99,8 +98,8 @@ export default function ServiceCard({ service, provider }) {
         <button
           onClick={handleFavorite}
           className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 shadow-md ${isFavorited
-            ? 'bg-danger text-white scale-110'
-            : 'bg-white/90 dark:bg-slate-800/90 text-slate-400 hover:text-danger hover:scale-110'
+            ? 'bg-red-600/75 text-white scale-110'
+            : 'bg-white/70 dark:bg-slate-800/70 text-slate-400 hover:text-red-600/75 hover:scale-110'
             }`}
           aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
         >
@@ -108,7 +107,7 @@ export default function ServiceCard({ service, provider }) {
         </button>
 
         {/* Category pill */}
-        <span className="absolute bottom-3 left-3 px-2.5 py-1 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm text-xs font-bold text-primary rounded-full">
+        <span className="absolute bottom-3 left-3 px-2.5 py-1 border border-indigo-600/60 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm text-sm font-bold text-blue-600 rounded-full">
           {service.category}
         </span>
 
@@ -129,14 +128,15 @@ export default function ServiceCard({ service, provider }) {
         {provider && (
           <div className="flex items-center gap-2 mb-3">
             <img
-              src={provider?.avatar && provider.avatar.startsWith('http') ? provider.avatar : (provider?.avatar ? `http://localhost:3000${provider.avatar}` : "https://i.pravatar.cc/150?u=default")}
+              src={getAvatarUrl(provider?.avatar)}
               alt={provider?.name || "Provider"}
               onError={(e) => {
-                e.target.src = "https://i.pravatar.cc/150?u=default";
+                e.target.onerror = null;
+                e.target.src = DEFAULT_AVATAR;
               }}
               className="w-6 h-6 rounded-full object-cover border border-slate-200"
             />
-            <span className="text-xs text-slate-500 dark:text-slate-400 truncate">{provider.name}</span>
+            <span className="text-xs text-slate-600 dark:text-slate-300 truncate">{provider.name}</span>
             {provider.verifiedBadge && (
               <BadgeCheck className="w-3.5 h-3.5 text-primary shrink-0" />
             )}
@@ -144,10 +144,10 @@ export default function ServiceCard({ service, provider }) {
         )}
 
         {/* Meta row */}
-        <div className="flex items-center gap-3 mb-3 text-xs text-slate-500 dark:text-slate-400">
+        <div className="flex items-center gap-3 mb-3 text-xs text-slate-500 dark:text-slate-300">
           <div className="flex items-center gap-0.5">
             <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-            <span className="font-semibold text-slate-700 dark:text-slate-300">{service.rating}</span>
+            <span className="font-semibold text-slate-700 dark:text-slate-200">{service.rating}</span>
             <span>({service.reviewCount})</span>
           </div>
           <div className="flex items-center gap-1">
@@ -163,7 +163,7 @@ export default function ServiceCard({ service, provider }) {
         </div>
 
         {/* Description */}
-        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-4 flex-1">
+        <p className="text-xs text-slate-700 dark:text-slate-200 line-clamp-2 mb-4 flex-1">
           {service.description}
         </p>
 
@@ -172,7 +172,7 @@ export default function ServiceCard({ service, provider }) {
           <div>
             <div className="flex items-baseline gap-1">
               {service.priceType === 'starting' && (
-                <span className="text-[10px] text-slate-400">Starts at</span>
+                <span className="text-[10px] text-slate-600 dark:text-slate-300">Starts at</span>
               )}
               <span className="text-lg font-bold text-slate-800 dark:text-white">
                 {formatCurrency(service.price)}
@@ -185,7 +185,8 @@ export default function ServiceCard({ service, provider }) {
                 <Link
                   to={`/services/${service.id}`}
                   state={{ service, provider }}
-                  className="px-3 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-all active:scale-95 whitespace-nowrap"
+                  aria-label={`View details for ${service.title}`}
+                  className="px-3 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-gray-600 dark:border-slate-200 text-[10px] font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-all active:scale-95 whitespace-nowrap"
                 >
                   View Details
                 </Link>
@@ -193,7 +194,8 @@ export default function ServiceCard({ service, provider }) {
                 <Link
                   to={`/services/${service.id}`}
                   state={{ service, provider, autoBook: true }}
-                  className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all hover:shadow-glow active:scale-95"
+                  aria-label={`Book ${service.title} now`}
+                  className="px-4 py-2 bg-primary/75 text-white text-xs font-bold rounded-xl hover:bg-indigo-700/75 transition-all hover:shadow-glow active:scale-100"
                 >
                   Book Now
                 </Link>
