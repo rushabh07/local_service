@@ -108,7 +108,7 @@ router.post("/login", async (req, res) => {
     token = jwt.sign({ id: user._id, role: role }, "secretkey", {
       expiresIn: "24h",
     });
-
+    
     // Delete any old cookies for this user
     await Cookie.deleteMany({ uid: userObj.uid });
 
